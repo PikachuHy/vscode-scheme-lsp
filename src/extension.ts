@@ -50,11 +50,10 @@ function startLspServer() {
         setTimeout(() => 
             {
                 terminal.sendText(
-                    '(import (lsp-server)) (define $thread (start-lsp-server ' 
-                    + String(serverPort)
-                    + ' '
-                    + String(debugLevel) 
-                    + '))\n', true);
+                    `(import (lsp-server)) 
+                     (parameterize ((lsp-server-log-level ${debugLevel}))
+                       (define $thread (start-lsp-server/background ${serverPort})))
+                     `, true);
                 resolve(true);
             }, 300)})
             .then((result) => {terminal.sendText('(display "Scheme LSP server started\\n")', true)});
