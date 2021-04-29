@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as net from 'net';
 import { SocketMessageWriter } from 'vscode-jsonrpc';
 import { Trace } from 'vscode-jsonrpc';
-import { window, workspace, ExtensionContext, commands, Uri } from 'vscode';
+import { workspace } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -16,15 +16,14 @@ import {
 let client: LanguageClient;
 let socket: net.Socket;
 let writer: SocketMessageWriter;
-let selectedImplementation: string = "chicken";
-let supportedImplementations = ['chicken', 'guile'];
 
 function startLspServer() {
     vscode.window.showInformationMessage('Scheme LSP server started!');
 
     const terminal = vscode.window.createTerminal(`Scheme REPL`);
     let replCmdName: string = '';
-    switch (selectedImplementation) {
+    let schemeImplementation = vscode.workspace.getConfiguration().get('schemeLsp.schemeImplementation')
+    switch (schemeImplementation) {
         case 'chicken':
             replCmdName = 'schemeLsp.chickenReplCommand';
             break;
@@ -32,7 +31,7 @@ function startLspServer() {
             replCmdName = 'schemeLsp.guileReplCommand';
             break;
         default:
-            console.log('implementation not supported: ' + selectedImplementation);
+            console.log('implementation not supported: ' + schemeImplementation);
     }
 
     const replCmd: string =
@@ -51,13 +50,13 @@ function startLspServer() {
             {
                 terminal.sendText(
                     `(import (lsp-server)) 
-                     (parameterize ((lsp-server-log-level ${debugLevel}))
-                       (define $thread (start-lsp-server/background ${serverPort})))
+                     (define $thread
+                       (parameterize ((lsp-server-log-level ${debugLevel}))
+                         (start-lsp-server/background ${serverPort})))
                      `, true);
                 resolve(true);
             }, 300)})
             .then((result) => {terminal.sendText('(display "Scheme LSP server started\\n")', true)});
-        
 
     return;
 }
@@ -106,12 +105,6 @@ function connectToLspServer() {
     //context.subscriptions.push(disposable);
 }
 
-function selectSchemeImplementation() {
-    window.showQuickPick(supportedImplementations, {
-        placeHolder: selectedImplementation,
-        }).then(result => { if (result) {selectedImplementation = result } });    
-}
-
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -127,23 +120,13 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.connect',
         function () {connectToLspServer()}));
 
-    context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.select-implementation',
-        function () {
-            const result = window.showQuickPick(['chicken', 'guile'], {
-		        placeHolder: selectedImplementation,
-		        //onDidSelectItem: item => window.showInformationMessage(`Focus ${++i}: ${item}`)
-	            }).then(result => {
-                    selectedImplementation = result || 'chicken';
-                    window.showInformationMessage(`Selected implementation: ${result}`);
-                });
-        }));
-
     context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.load-file',
         function () { 
             let message = {jsonrpc: "2.0", id: 0, method: "custom/loadFile", params: {textDocument: {uri: "file://" + vscode.window.activeTextEditor?.document.fileName}}};
             writer.write(message);
         }
     ))
+
 }
 
 // this method is called when your extension is deactivated

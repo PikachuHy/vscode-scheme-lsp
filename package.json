@@ -1,14 +1,18 @@
 {
 	"name": "scheme-lsp-client",
 	"publisher": "rgherdt",
+	"license": "MIT",
+	"author": {
+		"name": "Ricardo G. Herdt"
+	},
 	"displayName": "Scheme LSP Client",
-	"description": "A LSP client for Scheme",
+	"description": "A LSP-based extension for Scheme",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.55.0"
 	},
 	"categories": [
-		"Other"
+		"Programming Languages"
 	],
 	"activationEvents": [
 		"onLanguage:scheme",
@@ -50,9 +54,10 @@
 					"default": "guile --r7rs",
 					"description": "Command to start Guile scheme"
 				},
-				"schemeLsp.defaultImplementation": {
+				"schemeLsp.schemeImplementation": {
 					"scope": "application",
 					"type": "string",
+					"enum": ["chicken", "guile"],
 					"default": "chicken",
 					"description": "Default scheme implementation"
 				},
