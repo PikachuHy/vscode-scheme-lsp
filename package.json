@@ -80,7 +80,37 @@
 					"description": "Traces the communication between VS Code and the language server."
 				}
 			}
-		}]},
+		}],
+		"languages": [
+            {
+                "id": "scheme",
+                "aliases": [
+                    "Scheme",
+                    "scheme"
+                ],
+                "extensions": [
+                    ".scm",
+                    ".ss",
+                    ".sch",
+                    ".rkt"
+                ],
+                "configuration": "./scheme.configuration.json"
+            }
+        ],
+		"grammars": [
+            {
+                "language": "scheme",
+                "scopeName": "source.scheme",
+                "path": "./syntaxes/scheme.tmLanguage"
+            },
+            {
+                "scopeName": "markdown.scheme.codeblock",
+                "path": "./syntaxes/scheme.markdown.tmLanguage.json",
+                "injectTo": [
+                    "text.html.markdown"
+                ]
+            }
+        ]},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
