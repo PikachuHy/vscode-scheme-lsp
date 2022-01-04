@@ -154,8 +154,9 @@
 					<string>(?x)
 						(?&lt;=(\s|\(|\[)) # preceded by space or ( 
 						( do|or|and|else|quasiquote|begin|if|case|set!|
-						  cond|let|unquote|define|let\*|unquote-splicing|delay|
-						  letrec)
+						  cond|let|unquote|define|define-library|let\*|
+						  library|module|define-module|unquote-splicing|
+						  delay|letrec|import|use-modules)
 						(?=(\s|\())</string>
 					<key>name</key>
 					<string>keyword.control.scheme</string>
