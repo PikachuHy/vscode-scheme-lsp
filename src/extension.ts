@@ -51,7 +51,7 @@ function startLspServer() {
                 terminal.sendText(
                     `(import (lsp-server)) 
                      (define $thread
-                       (parameterize ((lsp-server-log-level ${debugLevel}))
+                       (parameterize ((lsp-server-log-level '${debugLevel}))
                          (start-lsp-server/background ${serverPort})))
                      `, true);
                 resolve(true);
