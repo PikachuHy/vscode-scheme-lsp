@@ -52,7 +52,7 @@ function startLspServer() {
                     `(import (lsp-server)) 
                      (define $thread
                        (parameterize ((lsp-server-log-level '${debugLevel}))
-                         (lsp-server-start/background ${serverPort})))
+                         (lsp-spawner-start ${serverPort})))
                      `, true);
                 resolve(true);
             }, 300)})
