@@ -30,6 +30,14 @@
 				"title": "Scheme LSP: connect to LSP server"
 			},
 			{
+				"command": "scheme-lsp-client.install-chicken-lsp-server",
+				"title": "Scheme LSP: install LSP server for CHICKEN to extension directory"
+			},
+			{
+				"command": "scheme-lsp-client.install-guile-lsp-server",
+				"title": "Scheme LSP: install LSP server for Guile to extension directory"
+			},
+			{
 				"command": "scheme-lsp-client.select-implementation",
 				"title": "Scheme LSP: select scheme implementation"
 			},
@@ -104,7 +112,7 @@
 						"scope": "application",
 						"type": "string",
 						"default": "https://codeberg.org/rgherdt/scheme-lsp-server/archive/",
-						"description": "URL of LSP Server installer"
+						"description": "URL of LSP Server's installer"
 					},
 					"schemeLsp.jsonRpcTarballDirectoryUrl": {
 						"scope": "application",

@@ -11,7 +11,7 @@ import {
 	ServerOptions,
 	StreamInfo
 } from 'vscode-languageclient';
-import { ensureChickenLspServer, setupChickenEnvironment } from './chicken';
+import { ensureChickenLspServer, installChickenLspServer, setupChickenEnvironment } from './chicken';
 import { ensureGuileLspServer, setupGuileEnvironment } from './guile';
 
 let client: LanguageClient;
@@ -156,6 +156,11 @@ export function activate(context: vscode.ExtensionContext) {
         }
     ))
 
+    context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.install-chicken-lsp-server',
+    function () {ensureChickenLspServer(context, true)}));
+
+    context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.install-guile-lsp-server',
+    function () {ensureGuileLspServer(context, true)}));
 }
 
 // this method is called when your extension is deactivated

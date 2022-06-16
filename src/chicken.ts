@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hasbin from 'hasbin';
-import * as util from 'util';
 
 const lspChickenServerDirName = 'lsp-chicken-server'
 const lspChickenServerExecutableName = 'chicken-lsp-server'
@@ -15,18 +14,27 @@ export async function setupChickenEnvironment(context: vscode.ExtensionContext, 
     
 }
 
-export async function ensureChickenLspServer(context: vscode.ExtensionContext)
+export async function ensureChickenLspServer(context: vscode.ExtensionContext, force: boolean = false)
 {
-    if (! fs.existsSync(path.join(context.extensionPath, lspChickenServerDirName, 'bin', lspChickenServerExecutableName))
-        && ! hasbin.sync(lspChickenServerExecutableName)) {
+    if ((! fs.existsSync(path.join(context.extensionPath, lspChickenServerDirName, 'bin', lspChickenServerExecutableName))
+         && ! hasbin.sync(lspChickenServerExecutableName))
+         || force) {
         installChickenLspServer(context)
     }
 }
 
 export async function installChickenLspServer(context: vscode.ExtensionContext)
 {
-    const terminal = vscode.window.createTerminal(`Chicken LSP install`);
-    const installDir = path.join(context.extensionPath, lspChickenServerDirName);
+    const targetDir = path.join(context.extensionPath, lspChickenServerDirName);
     
-    terminal.sendText(`CHICKEN_INSTALL_REPOSITORY=${installDir} CHICKEN_INSTALL_PREFIX=${installDir} chicken-install lsp-server`)
+    fs.unlink(targetDir, (err) => {
+        if (err) {
+            console.error(`Could not delete ${targetDir}: ${err.message}`);
+            throw err
+        }
+        console.log(`Successfully deleted ${targetDir}`);
+      })
+
+    const terminal = vscode.window.createTerminal(`Chicken LSP install`);
+    terminal.sendText(`CHICKEN_INSTALL_REPOSITORY=${targetDir} CHICKEN_INSTALL_PREFIX=${targetDir} chicken-install lsp-server`)
 }

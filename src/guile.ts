@@ -7,10 +7,11 @@ const lspGuileServerDirName = 'lsp-guile-server'
 const lspGuileServerExecutableName = 'guile-lsp-server'
 
 
-export async function ensureGuileLspServer(context: vscode.ExtensionContext)
+export async function ensureGuileLspServer(context: vscode.ExtensionContext, force: boolean = false)
 {
-    if (! fs.existsSync(path.join(context.extensionPath, lspGuileServerDirName, 'bin', lspGuileServerExecutableName))
-        && ! hasbin.sync(lspGuileServerExecutableName)) {    
+    if ((! fs.existsSync(path.join(context.extensionPath, lspGuileServerDirName, 'bin', lspGuileServerExecutableName))
+         && ! hasbin.sync(lspGuileServerExecutableName))
+        || force) {
         await installGuileJsonRpcServer(context)
         
         await installGuileLspServer(context)
@@ -41,6 +42,15 @@ export async function installGuileTarball(context: vscode.ExtensionContext, inst
 
 export async function installGuileJsonRpcServer(context: vscode.ExtensionContext)
 {
+    const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
+    fs.unlink(targetDir, (err) => {
+        if (err) {
+            console.error(`Could not delete ${targetDir}: ${err.message}`);
+            throw err
+        }
+        console.log(`Successfully deleted ${targetDir}`);
+      })
+
     downloadJsonRpcTarball(context, "lsp-guile-server", (installerPath) => {installGuileTarball(context, installerPath)})
 }
 
