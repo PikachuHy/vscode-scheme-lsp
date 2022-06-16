@@ -38,104 +38,136 @@
 				"title": "Scheme LSP: load current file"
 			}
 		],
-		"configuration": [{
-			"type": "object",
-			"title": "Scheme LSP Client",
-			"properties": {
-				"schemeLsp.chickenReplCommand": {
-					"scope": "application",
-					"type": "string",
-					"default": "rlwrap csi -R r7rs -:x",
-					"description": "Command to start CHICKEN's interpreter (csi)"
-				},
-				"schemeLsp.guileReplCommand": {
-					"scope": "application",
-					"type": "string",
-					"default": "guile --r7rs",
-					"description": "Command to start Guile scheme"
-				},
-				"schemeLsp.schemeImplementation": {
-					"scope": "application",
-					"type": "string",
-					"enum": ["chicken", "guile"],
-					"default": "chicken",
-					"description": "Default scheme implementation"
-				},
-				"schemeLsp.lspServerPort": {
-					"scope": "application",
-					"type": "integer",
-					"default": 4242,
-					"description": "TCP localhost port where the LSP server listens to."
-				},
-				"schemeLsp.debugLevel": {
-					"scope": "application",
-					"type": "string",
-					"default": "info",
-					"description": "Controls the verbosity of log messages on the server. Ranges from 0 to 3."
-				},
-				"schemeLsp.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "verbose",
-					"description": "Traces the communication between VS Code and the language server."
+		"configuration": [
+			{
+				"type": "object",
+				"title": "Scheme LSP Client",
+				"properties": {
+					"schemeLsp.chickenReplCommand": {
+						"scope": "application",
+						"type": "string",
+						"default": "rlwrap csi -R r7rs -:x",
+						"description": "Command to start CHICKEN's interpreter (csi)"
+					},
+					"schemeLsp.guileReplCommand": {
+						"scope": "application",
+						"type": "string",
+						"default": "guile --r7rs",
+						"description": "Command to start Guile scheme"
+					},
+					"schemeLsp.schemeImplementation": {
+						"scope": "application",
+						"type": "string",
+						"enum": [
+							"chicken",
+							"guile"
+						],
+						"default": "chicken",
+						"description": "Default scheme implementation"
+					},
+					"schemeLsp.lspServerPort": {
+						"scope": "application",
+						"type": "integer",
+						"default": 4242,
+						"description": "TCP localhost port where the LSP server listens to."
+					},
+					"schemeLsp.debugLevel": {
+						"scope": "application",
+						"type": "string",
+						"default": "info",
+						"description": "Controls the verbosity of log messages on the server. Ranges from 0 to 3."
+					},
+					"schemeLsp.trace.server": {
+						"scope": "window",
+						"type": "string",
+						"enum": [
+							"off",
+							"messages",
+							"verbose"
+						],
+						"default": "verbose",
+						"description": "Traces the communication between VS Code and the language server."
+					},
+					"schemeLsp.lspServerVersion": {
+						"scope": "application",
+						"type": "string",
+						"default": "433a6c49616dc8c4100097df88989114a3b237bb",
+						"description": "Version of Scheme LSP Server"
+					},
+					"schemeLsp.jsonRpcVersion": {
+						"scope": "application",
+						"type": "string",
+						"default": "0.2.3",
+						"description": "Version of JSON RPC library for Scheme"
+					},
+					"schemeLsp.lspServerTarballDirectoryUrl": {
+						"scope": "application",
+						"type": "string",
+						"default": "https://codeberg.org/rgherdt/scheme-lsp-server/archive/",
+						"description": "URL of LSP Server installer"
+					},
+					"schemeLsp.jsonRpcTarballDirectoryUrl": {
+						"scope": "application",
+						"type": "string",
+						"default": "https://codeberg.org/rgherdt/scheme-json-rpc/archive/",
+						"description": "URL of JSON RPC library for Scheme"
+					}
 				}
 			}
-		}],
+		],
 		"languages": [
-            {
-                "id": "scheme",
-                "aliases": [
-                    "Scheme",
-                    "scheme"
-                ],
-                "extensions": [
-                    ".scm",
-                    ".ss",
-                    ".sch",
-                    ".rkt"
-                ],
-                "configuration": "./scheme.configuration.json"
-            }
-        ],
+			{
+				"id": "scheme",
+				"aliases": [
+					"Scheme",
+					"scheme"
+				],
+				"extensions": [
+					".scm",
+					".ss",
+					".sch",
+					".rkt"
+				],
+				"configuration": "./scheme.configuration.json"
+			}
+		],
 		"grammars": [
-            {
-                "language": "scheme",
-                "scopeName": "source.scheme",
-                "path": "./syntaxes/scheme.tmLanguage"
-            },
-            {
-                "scopeName": "markdown.scheme.codeblock",
-                "path": "./syntaxes/scheme.markdown.tmLanguage.json",
-                "injectTo": [
-                    "text.html.markdown"
-                ]
-            }
-        ]},
+			{
+				"language": "scheme",
+				"scopeName": "source.scheme",
+				"path": "./syntaxes/scheme.tmLanguage"
+			},
+			{
+				"scopeName": "markdown.scheme.codeblock",
+				"path": "./syntaxes/scheme.markdown.tmLanguage.json",
+				"injectTo": [
+					"text.html.markdown"
+				]
+			}
+		]
+	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"		
+		"test": "node ./out/test/runTest.js"
 	},
 	"dependencies": {
+		"hasbin": "^1.2.3",
 		"vscode-jsonrpc": "^5.0.1",
 		"vscode-languageclient": "^6.1.3"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.55.0",
 		"@types/glob": "^7.1.3",
+		"@types/hasbin": "^1.2.0",
 		"@types/mocha": "^8.0.4",
 		"@types/node": "^12.11.7",
-		"eslint": "^7.19.0",
+		"@types/vscode": "^1.55.0",
 		"@typescript-eslint/eslint-plugin": "^4.14.1",
 		"@typescript-eslint/parser": "^4.14.1",
+		"eslint": "^7.19.0",
 		"glob": "^7.1.6",
 		"mocha": "^8.2.1",
 		"typescript": "^4.1.3",
