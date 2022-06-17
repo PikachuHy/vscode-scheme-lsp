@@ -2,23 +2,23 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hasbin from 'hasbin';
-import {downloadJsonRpcTarball, downloadLspServerTarball} from './util';
+import {downloadJsonRpcTarball, downloadLspServerTarball, waitForFile} from './util';
 const lspGuileServerDirName = 'lsp-guile-server'
 const lspGuileServerExecutableName = 'guile-lsp-server'
 
 
-export async function ensureGuileLspServer(context: vscode.ExtensionContext, force: boolean = false)
+export function ensureGuileLspServer(context: vscode.ExtensionContext, force: boolean = false)
 {
     if ((! fs.existsSync(path.join(context.extensionPath, lspGuileServerDirName, 'bin', lspGuileServerExecutableName))
          && ! hasbin.sync(lspGuileServerExecutableName))
         || force) {
-        await installGuileJsonRpcServer(context)
+        installGuileJsonRpcServer(context)
         
-        await installGuileLspServer(context)
+        installGuileLspServer(context)
     }
 }
 
-export async function setupGuileEnvironment(context: vscode.ExtensionContext, terminal: vscode.Terminal)
+export function setupGuileEnvironment(context: vscode.ExtensionContext, terminal: vscode.Terminal)
 {
     const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
     terminal.sendText(`export GUILE_LOAD_COMPILED_PATH=${targetDir}:${targetDir}/lib/guile/3.0/site-ccache/:$GUILE_LOAD_COMPILED_PATH\n`)
@@ -40,7 +40,7 @@ export async function installGuileTarball(context: vscode.ExtensionContext, inst
     terminal.sendText(`cd guile && ./configure --prefix=${targetDir} && make && make install\n`)
 }
 
-export async function installGuileJsonRpcServer(context: vscode.ExtensionContext)
+export function installGuileJsonRpcServer(context: vscode.ExtensionContext)
 {
     const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
     fs.unlink(targetDir, (err) => {
@@ -49,12 +49,18 @@ export async function installGuileJsonRpcServer(context: vscode.ExtensionContext
             throw err
         }
         console.log(`Successfully deleted ${targetDir}`);
+        downloadJsonRpcTarball(context, "lsp-guile-server", (installerPath) => {installGuileTarball(context, installerPath)})
       })
-
-    downloadJsonRpcTarball(context, "lsp-guile-server", (installerPath) => {installGuileTarball(context, installerPath)})
 }
 
 export async function installGuileLspServer(context: vscode.ExtensionContext)
 {
-    downloadLspServerTarball(context, "lsp-guile-server", (installerPath) => {installGuileTarball(context, installerPath)})
+    const targetDir = path.join(context.extensionPath, lspGuileServerDirName);
+    downloadLspServerTarball(
+        context,
+        "lsp-guile-server",
+        (installerPath) => {
+            installGuileTarball(context, installerPath)
+        })
+    await waitForFile(path.join(targetDir, lspGuileServerExecutableName))
 }

@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as https from 'https';
+import hasbin = require('hasbin');
 
 
 export async function downloadTarball(
@@ -61,6 +62,13 @@ export async function downloadLspServerTarball(
     return await downloadTarball(context, tarballUrl, "scheme-lsp-server", targetName, callback)
 }
 
-
-
-
+export async function waitForFile(filePath: string)
+{
+    setTimeout(() => {
+        if (fs.existsSync(filePath)) {
+            return
+        } else {
+            waitForFile(filePath)
+        }
+    }, 1000)
+}

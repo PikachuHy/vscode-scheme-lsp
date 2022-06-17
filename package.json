@@ -54,7 +54,7 @@
 					"schemeLsp.chickenReplCommand": {
 						"scope": "application",
 						"type": "string",
-						"default": "rlwrap csi -R r7rs -:x",
+						"default": "rlwrap csi -R r7rs",
 						"description": "Command to start CHICKEN's interpreter (csi)"
 					},
 					"schemeLsp.guileReplCommand": {
@@ -82,7 +82,7 @@
 					"schemeLsp.debugLevel": {
 						"scope": "application",
 						"type": "string",
-						"default": "info",
+						"default": "error",
 						"description": "Controls the verbosity of log messages on the server. Ranges from 0 to 3."
 					},
 					"schemeLsp.trace.server": {

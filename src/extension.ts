@@ -17,8 +17,9 @@ import { ensureGuileLspServer, setupGuileEnvironment } from './guile';
 let client: LanguageClient;
 let socket: net.Socket;
 let writer: SocketMessageWriter;
+const replTerminalName = 'Scheme REPL'
 
-export async function ensureSchemeLspServer(context: vscode.ExtensionContext)
+export function ensureSchemeLspServer(context: vscode.ExtensionContext)
 {
     const schemeImplementation = 
         vscode.workspace.getConfiguration().get('schemeLsp.schemeImplementation')
@@ -43,7 +44,7 @@ function setupEnvironment(context: vscode.ExtensionContext, implementation: stri
 }
 
 function startLspServer(context: vscode.ExtensionContext) {
-    const terminal = vscode.window.createTerminal(`Scheme REPL`);
+    const terminal = vscode.window.createTerminal(replTerminalName);
     let replCmdName: string = '';
     let schemeImplementation: string = vscode.workspace.getConfiguration().get('schemeLsp.schemeImplementation')!
     switch (schemeImplementation) {
@@ -80,7 +81,7 @@ function startLspServer(context: vscode.ExtensionContext) {
                          (lsp-spawner-start ${serverPort})))
                      `, true);
                 resolve(true);
-            }, 300)})
+            }, 1000)})
             .then((result) => {
                 vscode.window.showInformationMessage('Scheme LSP server started!');
                 terminal.sendText('(display "Scheme LSP server started\\n")', true)
@@ -89,7 +90,7 @@ function startLspServer(context: vscode.ExtensionContext) {
     return;
 }
 
-function connectToLspServer() {
+function connectToLspServer(context: vscode.ExtensionContext) {
     const configPort: number = 
         vscode.workspace.getConfiguration().get('schemeLsp.lspServerPort') || 4242;
 
@@ -130,27 +131,31 @@ function connectToLspServer() {
     // enable tracing (.Off, .Messages, Verbose)
     client.trace = Trace.Verbose;
     let disposable = client.start();
-    //context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable);
 }
 
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    ensureSchemeLspServer(context)
+
     context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.launch',
         function() {
-            ensureSchemeLspServer(context)
             setTimeout(() => {startLspServer(context)}, 1000)
             setTimeout(() => {vscode.commands.executeCommand('scheme-lsp-client.connect')},
-                       2000);
+                       3000);
             }));
 
     //connectToLspServer();
     context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.connect',
-        function () {connectToLspServer()}));
+        function () {connectToLspServer(context)}));
 
     context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.load-file',
-        function () { 
+        function () {
+            // Instead of using a custom command, we could just execute something in the
+            // corresponding terminal. The advantage of the current approach though is that
+            // the LSP server is free to do more stuff upon 'loading' a file.
             let message = {jsonrpc: "2.0", id: 0, method: "custom/loadFile", params: {textDocument: {uri: "file://" + vscode.window.activeTextEditor?.document.fileName}}};
             writer.write(message);
         }
