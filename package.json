@@ -82,8 +82,14 @@
 					"schemeLsp.debugLevel": {
 						"scope": "application",
 						"type": "string",
+						"enum": [
+							"error",
+							"warning",
+							"info",
+							"debug"
+						],
 						"default": "error",
-						"description": "Controls the verbosity of log messages on the server. Ranges from 0 to 3."
+						"description": "Controls the verbosity of log messages on the server. 'error' means only error messages, 'debug' means maximal verbosity."
 					},
 					"schemeLsp.trace.server": {
 						"scope": "window",
