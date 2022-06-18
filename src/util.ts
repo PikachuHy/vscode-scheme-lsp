@@ -7,10 +7,8 @@ import hasbin = require('hasbin');
 
 
 export async function downloadTarball(
-    context: vscode.ExtensionContext, 
     tarballUrl: string, 
     libraryName: string, 
-    targetName: string,
     callback: (installerPath: string) => void)
 {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installers'))
@@ -21,11 +19,11 @@ export async function downloadTarball(
         res.pipe(filePath);
         filePath.on('finish',() => {
             filePath.close();
-            console.log(`Download of ${targetName} Completed`); 
+            console.log(`Download of ${libraryName} Completed`);
             callback(installerPath)
         })
     }).on('error', function(err) {
-        vscode.window.showErrorMessage(`Error downloading ${targetName}: ${err.message}`)
+        vscode.window.showErrorMessage(`Error downloading ${libraryName}: ${err.message}`)
     })
     return installerPath;
 }
@@ -43,7 +41,7 @@ export async function downloadJsonRpcTarball(
     const tarballUrl: string =
         new URL(`${jsonRpcVersion}.tar.gz`, tarballDirectoryUrl).toString()
 
-    return downloadTarball(context, tarballUrl, "scheme-json-rpc", targetName, callback)
+    return downloadTarball(tarballUrl, "scheme-json-rpc", callback)
 }
 
 export async function downloadLspServerTarball(
@@ -59,16 +57,6 @@ export async function downloadLspServerTarball(
     const tarballUrl: string =
         new URL(`${lspServerVersion}.tar.gz`, tarballDirectoryUrl).toString()
 
-    return await downloadTarball(context, tarballUrl, "scheme-lsp-server", targetName, callback)
+    return await downloadTarball(tarballUrl, "scheme-lsp-server", callback)
 }
 
-export async function waitForFile(filePath: string)
-{
-    setTimeout(() => {
-        if (fs.existsSync(filePath)) {
-            return
-        } else {
-            waitForFile(filePath)
-        }
-    }, 1000)
-}
