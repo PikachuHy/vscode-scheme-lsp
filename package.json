@@ -1,13 +1,17 @@
 {
 	"name": "scheme-lsp-client",
 	"publisher": "rgherdt",
-	"license": "MIT",
+	"license": "GPL-3.0",
 	"author": {
 		"name": "Ricardo G. Herdt"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://codeberg.org/rgherdt/vscode-scheme-lsp"
+	},
 	"displayName": "Scheme LSP Client",
 	"description": "A LSP-based extension for Scheme",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"engines": {
 		"vscode": "^1.55.0"
 	},
@@ -99,19 +103,19 @@
 							"messages",
 							"verbose"
 						],
-						"default": "verbose",
+						"default": "off",
 						"description": "Traces the communication between VS Code and the language server."
 					},
 					"schemeLsp.lspServerVersion": {
 						"scope": "application",
 						"type": "string",
-						"default": "433a6c49616dc8c4100097df88989114a3b237bb",
+						"default": "master",
 						"description": "Version of Scheme LSP Server"
 					},
 					"schemeLsp.jsonRpcVersion": {
 						"scope": "application",
 						"type": "string",
-						"default": "0.2.3",
+						"default": "master",
 						"description": "Version of JSON RPC library for Scheme"
 					},
 					"schemeLsp.lspServerTarballDirectoryUrl": {
