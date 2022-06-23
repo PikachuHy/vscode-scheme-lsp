@@ -1,5 +1,5 @@
 {
-	"name": "scheme-lsp-client",
+	"name": "scheme-lsp",
 	"publisher": "rgherdt",
 	"license": "GPL-3.0",
 	"author": {
@@ -9,7 +9,7 @@
 		"type": "git",
 		"url": "https://codeberg.org/rgherdt/vscode-scheme-lsp"
 	},
-	"displayName": "Scheme LSP Client",
+	"displayName": "Scheme LSP",
 	"description": "A LSP-based extension for Scheme",
 	"version": "0.1.0",
 	"engines": {
