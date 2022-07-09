@@ -26,10 +26,6 @@
     "main": "./out/extension.js",
     "contributes": {
 	"commands": [
-	    {
-		"command": "scheme-lsp-client.launch",
-		"title": "Scheme LSP: launch server"
-	    },
 		{
 			"command": "scheme-lsp-client.connect",
 			"title": "Scheme LSP: connect to LSP server"
@@ -45,10 +41,6 @@
 	    {
 		"command": "scheme-lsp-client.select-implementation",
 		"title": "Scheme LSP: select scheme implementation"
-	    },
-	    {
-		"command": "scheme-lsp-client.load-file",
-		"title": "Scheme LSP: load current file"
 	    }
 	],
 	"configuration": [

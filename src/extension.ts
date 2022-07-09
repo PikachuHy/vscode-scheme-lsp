@@ -140,26 +140,18 @@ function connectToLspServer(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    ensureSchemeLspServer(context, false, () => {
+        startLspServer(context)
+            .then((result) =>
+                setTimeout(
+                    () => vscode.commands.executeCommand('scheme-lsp-client.connect'),
+                    1000)
+                 )
+    })
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            'scheme-lsp-client.launch',
-            function() {
-                ensureSchemeLspServer(context, false, () => {
-                    startLspServer(context)
-                        .then((result) =>
-                            setTimeout(
-                                () => vscode.commands.executeCommand('scheme-lsp-client.connect'),
-                                1000)
-                             )
-                })
-            })
-    );
-    //connectToLspServer();
     context.subscriptions.push(
         vscode.commands.registerCommand(
             'scheme-lsp-client.connect',
