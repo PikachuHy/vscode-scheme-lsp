@@ -31,10 +31,6 @@
 		"title": "Scheme LSP: launch server"
 	    },
 	    {
-		"command": "scheme-lsp-client.connect",
-		"title": "Scheme LSP: connect to LSP server"
-	    },
-	    {
 		"command": "scheme-lsp-client.install-chicken-lsp-server",
 		"title": "Scheme LSP: install LSP server for CHICKEN to extension directory"
 	    },
@@ -56,17 +52,17 @@
 		"type": "object",
 		"title": "Scheme LSP Client",
 		"properties": {
-		    "schemeLsp.chickenReplCommand": {
+		    "schemeLsp.chickenLspServer": {
 			"scope": "application",
 			"type": "string",
-			"default": "rlwrap csi -R r7rs",
-			"description": "Command to start CHICKEN's interpreter (csi)"
+			"default": "chicken-lsp-server",
+			"description": "Command to start CHICKEN's LSP server"
 		    },
-		    "schemeLsp.guileReplCommand": {
+		    "schemeLsp.guileLspServer": {
 			"scope": "application",
 			"type": "string",
-			"default": "guile --r7rs",
-			"description": "Command to start Guile scheme"
+			"default": "guile-lsp-server",
+			"description": "Command to start Guile's LSP server"
 		    },
 		    "schemeLsp.schemeImplementation": {
 			"scope": "application",
@@ -75,14 +71,8 @@
 			    "chicken",
 			    "guile"
 			],
-			"default": "chicken",
+			"default": "guile",
 			"description": "Default scheme implementation"
-		    },
-		    "schemeLsp.lspServerPort": {
-			"scope": "application",
-			"type": "integer",
-			"default": 4242,
-			"description": "TCP localhost port where the LSP server listens to."
 		    },
 		    "schemeLsp.debugLevel": {
 			"scope": "application",

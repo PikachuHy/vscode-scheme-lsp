@@ -24,6 +24,7 @@ import { SocketMessageWriter } from 'vscode-jsonrpc';
 import { Trace } from 'vscode-jsonrpc';
 import { workspace } from 'vscode';
 import {
+    Executable,
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
@@ -65,68 +66,31 @@ function setupEnvironment(context: vscode.ExtensionContext, implementation: stri
 }
 
 function startLspServer(context: vscode.ExtensionContext) {
-    const terminal = vscode.window.createTerminal(replTerminalName);
-    let replCmdName: string = '';
+    let languageServerCommand: string = '';
     let schemeImplementation: string = vscode.workspace.getConfiguration().get('schemeLsp.schemeImplementation')!
     switch (schemeImplementation) {
         case 'chicken':
-            replCmdName = 'schemeLsp.chickenReplCommand';
+            languageServerCommand = 
+                vscode.workspace.getConfiguration().get('schemeLsp.chickenLspServer')!;
             break;
         case 'guile':
-            replCmdName = 'schemeLsp.guileReplCommand';
+            languageServerCommand = 
+                vscode.workspace.getConfiguration().get('schemeLsp.guileLspServer')!;
             break;
         default:
             console.log('implementation not supported: ' + schemeImplementation);
     }
 
-    const replCmd: string =
-        vscode.workspace.getConfiguration().get(replCmdName) || '';
-    
-    const debugLevel: number = 
-        vscode.workspace.getConfiguration().get('schemeLsp.debugLevel') || 0;
+    const debugLevel: string = 
+        vscode.workspace.getConfiguration().get('schemeLsp.debugLevel') || "error";
 
-    const serverPort: number = 
-        vscode.workspace.getConfiguration().get('schemeLsp.lspServerPort') || 4242;
-
-    terminal.show(true);
-    setupEnvironment(context, schemeImplementation, terminal)
-    terminal.sendText(replCmd, true);
-
-    return new Promise((resolve, reject) => {
-        setTimeout(() => 
-            {
-                terminal.sendText(
-                    `(import (lsp-server)) 
-                     (define $thread
-                       (parameterize ((lsp-server-log-level '${debugLevel}))
-                         (lsp-spawner-start ${serverPort})))
-                     `, true);
-                vscode.window.showInformationMessage('Scheme LSP server started!');
-                terminal.sendText('(display "Scheme LSP server started\\n")', true)
-                resolve(true);
-            }, 1000)})
-}
-
-function connectToLspServer(context: vscode.ExtensionContext) {
-    const configPort: number = 
-        vscode.workspace.getConfiguration().get('schemeLsp.lspServerPort') || 4242;
-
-    let connectionInfo = {
-        port: configPort
-    };
-
-    socket = net.connect(connectionInfo);
-    writer = new SocketMessageWriter(socket);
-
-    let serverOptions: ServerOptions = () => {
-        // Connect to language server via socket
-        let result: StreamInfo = {
-            writer: socket,
-            reader: socket,
-            detached: true
-        };
-        return Promise.resolve(result);
-        
+    const executable: Executable = {
+        command: languageServerCommand,
+        args: ["--log-level", debugLevel, "--listen", "41827"]
+    }
+    let serverOptions: ServerOptions = {
+        run: executable,
+        debug: executable        
     };
     
     let clientOptions: LanguageClientOptions = {
@@ -145,42 +109,18 @@ function connectToLspServer(context: vscode.ExtensionContext) {
         clientOptions
     );
 
+    console.log('starting client')
     // enable tracing (.Off, .Messages, Verbose)
     client.trace = Trace.Verbose;
     let disposable = client.start();
     context.subscriptions.push(disposable);
+    
 }
-
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-    context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.launch',
-        function() {
-            ensureSchemeLspServer(context, false, () => {
-                startLspServer(context)
-                .then((result) =>
-                    setTimeout(
-                        () => vscode.commands.executeCommand('scheme-lsp-client.connect'),
-                        1000)
-                )
-            })
-        })
-    );
-
-    //connectToLspServer();
-    context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.connect',
-        function () {connectToLspServer(context)}));
-
-    context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.load-file',
-        function () {
-            // Instead of using a custom command, we could just execute something in the
-            // corresponding terminal. The advantage of the current approach though is that
-            // the LSP server is free to do more stuff upon 'loading' a file.
-            let message = {jsonrpc: "2.0", id: 0, method: "custom/loadFile", params: {textDocument: {uri: "file://" + vscode.window.activeTextEditor?.document.fileName}}};
-            writer.write(message);
-        }
-    ))
+    startLspServer(context);
 
     context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.install-chicken-lsp-server',
     function () {ensureChickenLspServer(context, true)}));
