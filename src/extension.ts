@@ -90,10 +90,11 @@ function startLspServer(context: vscode.ExtensionContext) {
         vscode.workspace.getConfiguration().get('schemeLsp.tcpPort')!
 
     return new Promise((resolve, reject) => {
-        spawn(languageServerCommand, 
+        spawn(languageServerCommand,
               ["--log-level", debugLevel, "--listen", "41827", "--tcp", tcpPort.toString()],
               {
-                  detached: false
+                  detached: false,
+                  stdio: 'ignore'
               });
         resolve(true)       
     })
