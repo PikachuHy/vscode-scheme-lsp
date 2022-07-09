@@ -25,13 +25,14 @@ import { Trace } from 'vscode-jsonrpc';
 import { workspace } from 'vscode';
 import {
     Executable,
-	LanguageClient,
-	LanguageClientOptions,
-	ServerOptions,
-	StreamInfo
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    StreamInfo
 } from 'vscode-languageclient';
 import { ensureChickenLspServer, setupChickenEnvironment } from './chicken';
 import { ensureGuileLspServer, setupGuileEnvironment } from './guile';
+import { spawn } from 'child_process';
 
 let client: LanguageClient;
 let socket: net.Socket;
@@ -65,6 +66,7 @@ function setupEnvironment(context: vscode.ExtensionContext, implementation: stri
     }
 }
 
+
 function startLspServer(context: vscode.ExtensionContext) {
     let languageServerCommand: string = '';
     let schemeImplementation: string = vscode.workspace.getConfiguration().get('schemeLsp.schemeImplementation')!
@@ -84,13 +86,37 @@ function startLspServer(context: vscode.ExtensionContext) {
     const debugLevel: string = 
         vscode.workspace.getConfiguration().get('schemeLsp.debugLevel') || "error";
 
-    const executable: Executable = {
-        command: languageServerCommand,
-        args: ["--log-level", debugLevel, "--listen", "41827"]
-    }
-    let serverOptions: ServerOptions = {
-        run: executable,
-        debug: executable        
+    const tcpPort: number = 
+        vscode.workspace.getConfiguration().get('schemeLsp.tcpPort')!
+
+    return new Promise((resolve, reject) => {
+        spawn(languageServerCommand, 
+              ["--log-level", debugLevel, "--listen", "41827", "--tcp", tcpPort.toString()],
+              {
+                  detached: false
+              });
+        resolve(true)       
+    })
+}
+
+
+function connectToLspServer(context: vscode.ExtensionContext) {
+    const tcpPort: number = 
+        vscode.workspace.getConfiguration().get('schemeLsp.tcpPort') || 4242;
+    let connectionInfo = {
+        port: tcpPort
+    };
+    socket = net.connect(connectionInfo);
+    writer = new SocketMessageWriter(socket);
+    let serverOptions: ServerOptions = () => {
+        // Connect to language server via socket
+        let result: StreamInfo = {
+            writer: socket,
+            reader: socket,
+            detached: true
+        };
+        return Promise.resolve(result);
+        
     };
     
     let clientOptions: LanguageClientOptions = {
@@ -101,32 +127,52 @@ function startLspServer(context: vscode.ExtensionContext) {
             fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
         }
     };
-
     client = new LanguageClient(
         'schemeLspClient',
         'Scheme LSP Client',
         serverOptions,
         clientOptions
     );
-
-    console.log('starting client')
     // enable tracing (.Off, .Messages, Verbose)
     client.trace = Trace.Verbose;
-    let disposable = client.start();
+    let disposable = client.start();    
     context.subscriptions.push(disposable);
-    
 }
+
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-    startLspServer(context);
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            'scheme-lsp-client.launch',
+            function() {
+                ensureSchemeLspServer(context, false, () => {
+                    startLspServer(context)
+                        .then((result) =>
+                            setTimeout(
+                                () => vscode.commands.executeCommand('scheme-lsp-client.connect'),
+                                1000)
+                             )
+                })
+            })
+    );
+    //connectToLspServer();
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            'scheme-lsp-client.connect',
+            function () {connectToLspServer(context)}));
 
-    context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.install-chicken-lsp-server',
-    function () {ensureChickenLspServer(context, true)}));
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            'scheme-lsp-client.install-chicken-lsp-server',
+            function () {ensureChickenLspServer(context, true)}));
 
-    context.subscriptions.push(vscode.commands.registerCommand('scheme-lsp-client.install-guile-lsp-server',
-    function () {ensureGuileLspServer(context, true)}));
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            'scheme-lsp-client.install-guile-lsp-server',
+            function () {ensureGuileLspServer(context, true)}));
 }
 
 // this method is called when your extension is deactivated

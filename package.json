@@ -30,6 +30,10 @@
 		"command": "scheme-lsp-client.launch",
 		"title": "Scheme LSP: launch server"
 	    },
+		{
+			"command": "scheme-lsp-client.connect",
+			"title": "Scheme LSP: connect to LSP server"
+		},
 	    {
 		"command": "scheme-lsp-client.install-chicken-lsp-server",
 		"title": "Scheme LSP: install LSP server for CHICKEN to extension directory"
@@ -86,6 +90,11 @@
 			"default": "error",
 			"description": "Controls the verbosity of log messages on the server. 'error' means only error messages, 'debug' means maximal verbosity."
 		    },
+			"schemeLsp.tcpPort": {
+				"scope": "application",
+				"type": "integer",
+				"default": 4242
+			},
 		    "schemeLsp.trace.server": {
 			"scope": "window",
 			"type": "string",
@@ -135,7 +144,7 @@
 		    ".scm",
 		    ".ss",
 		    ".sch",
-		    ".rkt"
+		    ".sld"
 		],
 		"configuration": "./scheme.configuration.json"
 	    }
