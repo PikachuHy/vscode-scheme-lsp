@@ -48,18 +48,6 @@
 		"type": "object",
 		"title": "Scheme LSP Client",
 		"properties": {
-		    "schemeLsp.chickenLspServer": {
-			"scope": "application",
-			"type": "string",
-			"default": "chicken-lsp-server",
-			"description": "Command to start CHICKEN's LSP server"
-		    },
-		    "schemeLsp.guileLspServer": {
-			"scope": "application",
-			"type": "string",
-			"default": "guile-lsp-server",
-			"description": "Command to start Guile's LSP server"
-		    },
 		    "schemeLsp.schemeImplementation": {
 			"scope": "application",
 			"type": "string",

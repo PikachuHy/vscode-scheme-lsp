@@ -24,20 +24,18 @@ import { SocketMessageWriter } from 'vscode-jsonrpc';
 import { Trace } from 'vscode-jsonrpc';
 import { workspace } from 'vscode';
 import {
-    Executable,
     LanguageClient,
     LanguageClientOptions,
     ServerOptions,
     StreamInfo
 } from 'vscode-languageclient';
-import { ensureChickenLspServer, setupChickenEnvironment } from './chicken';
-import { ensureGuileLspServer, setupGuileEnvironment } from './guile';
+import { ensureChickenLspServer, chickenEnvironmentMap, findChickenLspServer } from './chicken';
+import { ensureGuileLspServer, guileEnvironmentMap, findGuileLspServer } from './guile';
 import { spawn } from 'child_process';
 
 let client: LanguageClient;
 let socket: net.Socket;
 let writer: SocketMessageWriter;
-const replTerminalName = 'Scheme REPL'
 
 export function ensureSchemeLspServer(
     context: vscode.ExtensionContext,
@@ -54,16 +52,18 @@ export function ensureSchemeLspServer(
     }
 }
 
-function setupEnvironment(context: vscode.ExtensionContext, implementation: string, terminal: vscode.Terminal)
+function setupEnvironment(context: vscode.ExtensionContext, implementation: string)
 {
+    let env = {};
     switch (implementation) {
         case 'chicken':
-            setupChickenEnvironment(context, terminal)
+            env = chickenEnvironmentMap(context)
             break
         case 'guile':
-            setupGuileEnvironment(context, terminal)
+            env = guileEnvironmentMap(context)
             break;
     }
+    return env
 }
 
 
@@ -73,11 +73,11 @@ function startLspServer(context: vscode.ExtensionContext) {
     switch (schemeImplementation) {
         case 'chicken':
             languageServerCommand = 
-                vscode.workspace.getConfiguration().get('schemeLsp.chickenLspServer')!;
+                findChickenLspServer(context) || '';
             break;
         case 'guile':
             languageServerCommand = 
-                vscode.workspace.getConfiguration().get('schemeLsp.guileLspServer')!;
+                findGuileLspServer(context) || '';
             break;
         default:
             console.log('implementation not supported: ' + schemeImplementation);
@@ -89,12 +89,19 @@ function startLspServer(context: vscode.ExtensionContext) {
     const tcpPort: number = 
         vscode.workspace.getConfiguration().get('schemeLsp.tcpPort')!
 
+    if (languageServerCommand == '') {
+        throw new Error('Unable to find an LSP server. Aborting.')
+    }
+
     return new Promise((resolve, reject) => {
+        const env = setupEnvironment(context, schemeImplementation)
+
         spawn(languageServerCommand,
               ["--log-level", debugLevel, "--listen", "41827", "--tcp", tcpPort.toString()],
               {
                   detached: false,
-                  stdio: 'ignore'
+                  stdio: 'ignore',
+                  env: env
               });
         resolve(true)       
     })

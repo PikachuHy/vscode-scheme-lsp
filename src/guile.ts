@@ -24,6 +24,19 @@ import {downloadJsonRpcTarball, downloadLspServerTarball} from './util';
 const lspGuileServerDirName = 'lsp-guile-server'
 const lspGuileServerExecutableName = 'guile-lsp-server'
 
+export function findGuileLspServer(context: vscode.ExtensionContext)
+{
+    const localInstallation =
+        path.join(context.extensionPath, lspGuileServerDirName, 'bin', lspGuileServerExecutableName)
+    if (fs.existsSync(localInstallation)) {
+        return localInstallation
+    } else if (hasbin.sync(lspGuileServerExecutableName)) {
+        return lspGuileServerExecutableName
+    } else {
+        return null
+    }
+
+}
 
 export function ensureGuileLspServer(
     context: vscode.ExtensionContext,
@@ -31,9 +44,7 @@ export function ensureGuileLspServer(
     callback: () => void = () => {}
     )
 {
-    if ((! fs.existsSync(path.join(context.extensionPath, lspGuileServerDirName, 'bin', lspGuileServerExecutableName))
-         && ! hasbin.sync(lspGuileServerExecutableName))
-        || force) {
+    if (findGuileLspServer(context) == null || force) {
         installGuileJsonRpcServer(context, () => {
             installGuileLspServer(context, callback)
         })
@@ -47,6 +58,16 @@ export function setupGuileEnvironment(context: vscode.ExtensionContext, terminal
     const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
     terminal.sendText(`export GUILE_LOAD_COMPILED_PATH=${targetDir}:${targetDir}/lib/guile/3.0/site-ccache/:$GUILE_LOAD_COMPILED_PATH\n`)
     terminal.sendText(`export GUILE_LOAD_PATH=${targetDir}:${targetDir}/share/guile/3.0/:$GUILE_LOAD_PATH\n`)
+}
+
+export function guileEnvironmentMap(context: vscode.ExtensionContext)
+{
+    const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
+    return {
+        ...process.env,
+        GUILE_LOAD_COMPILED_PATH: `${targetDir}:${targetDir}/lib/guile/3.0/site-ccache/:${process.env.GUILE_LOAD_COMPILED_PATH}`,
+        GUILE_LOAD_PATH: `${targetDir}:${targetDir}/share/guile/3.0/:${process.env.GUILE_LOAD_PATH}`
+    }
 }
 
 export async function installGuileTarball(

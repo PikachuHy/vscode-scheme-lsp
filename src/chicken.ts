@@ -20,6 +20,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hasbin from 'hasbin';
+import { execFileSync } from 'child_process';
 
 const lspChickenServerDirName = 'lsp-chicken-server'
 const lspChickenServerExecutableName = 'chicken-lsp-server'
@@ -31,14 +32,37 @@ export function setupChickenEnvironment(context: vscode.ExtensionContext, termin
                        export CHICKEN_REPOSITORY_PATH=${targetDir}:$current_repository_path`)
 }
 
+export function chickenEnvironmentMap(context: vscode.ExtensionContext)
+{
+    const targetDir = path.join(context.extensionPath, lspChickenServerDirName)
+    const currentRepositoryPath = execFileSync(
+        'csi', 
+        ['-e', '(import (chicken platform)) (for-each (lambda (p) (display p) (display ":")) (repository-path))'])
+    return {
+        ...process.env,
+        CHICKEN_REPOSITORY_PATH: `${targetDir}:${currentRepositoryPath}`,
+    }
+}
+
+export function findChickenLspServer(context: vscode.ExtensionContext)
+{
+    const localInstallation = 
+        path.join(context.extensionPath, lspChickenServerDirName, 'bin', lspChickenServerExecutableName)
+    if (fs.existsSync(localInstallation)) {
+        return localInstallation;
+    } else if (hasbin.sync(lspChickenServerExecutableName)) {
+        return lspChickenServerExecutableName;
+    } else {
+        return null
+    }
+}
+
 export function ensureChickenLspServer(
     context: vscode.ExtensionContext,
     force: boolean = false,
     callback: () => void = () => {})
 {
-    if ((! fs.existsSync(path.join(context.extensionPath, lspChickenServerDirName, 'bin', lspChickenServerExecutableName))
-         && ! hasbin.sync(lspChickenServerExecutableName))
-         || force) {
+    if (findChickenLspServer(context) == null || force) {
         installChickenLspServer(context, callback)
     } else {
         callback()
