@@ -20,7 +20,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hasbin from 'hasbin';
-import { execFileSync } from 'child_process';
+import { execFileSync, execSync } from 'child_process';
+import { extractVersion, findLspServer, installedVersionSufficient } from './util';
 
 const lspChickenServerDirName = 'lsp-chicken-server'
 const lspChickenServerExecutableName = 'chicken-lsp-server'
@@ -44,17 +45,30 @@ export function chickenEnvironmentMap(context: vscode.ExtensionContext)
     }
 }
 
-export function findChickenLspServer(context: vscode.ExtensionContext)
+export function getChickenLspServerVersion(context: vscode.ExtensionContext)
 {
-    const localInstallation = 
-        path.join(context.extensionPath, lspChickenServerDirName, 'bin', lspChickenServerExecutableName)
-    if (fs.existsSync(localInstallation)) {
-        return localInstallation;
-    } else if (hasbin.sync(lspChickenServerExecutableName)) {
-        return lspChickenServerExecutableName;
-    } else {
+    const lspServerCommand = findChickenLspServer(context);
+    console.log(`chicken lsp server command: ${lspServerCommand}`)
+    if (lspServerCommand === null) {
         return null
     }
+    let env = chickenEnvironmentMap(context)
+
+    const versionOutput = execFileSync(
+        lspServerCommand,
+        ['--version'],
+        {
+            env: env,
+            encoding: 'utf-8'
+        }
+    )
+    console.log(versionOutput.toString())
+    return extractVersion(versionOutput.toString())
+}
+
+export function findChickenLspServer(context: vscode.ExtensionContext)
+{
+    return findLspServer(context, lspChickenServerDirName, lspChickenServerExecutableName);
 }
 
 export function ensureChickenLspServer(
@@ -63,6 +77,13 @@ export function ensureChickenLspServer(
     callback: () => void = () => {})
 {
     if (findChickenLspServer(context) == null || force) {
+        installChickenLspServer(context, callback)
+    } else if (installedVersionSufficient(getChickenLspServerVersion(context)!,  
+                                          vscode.workspace
+                                          .getConfiguration()
+                                          .get('schemeLsp.lspServerVersion')!
+    )) {
+        vscode.window.showInformationMessage('Old version of LSP. Reinstalling it.');
         installChickenLspServer(context, callback)
     } else {
         callback()

@@ -22,6 +22,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as https from 'https';
 import hasbin = require('hasbin');
+import { dir } from 'console';
 
 
 export async function downloadTarball(
@@ -78,3 +79,31 @@ export async function downloadLspServerTarball(
     return await downloadTarball(tarballUrl, "scheme-lsp-server", callback)
 }
 
+export function extractVersion(versionOutput: string) {
+    const lines = versionOutput.split(os.EOL);
+    const regexp = new RegExp('^Version (.*)')
+    for (let line of lines) {
+        let m = line.match(regexp)
+        if (m !== null) {
+            return m[1]
+        }
+    }
+}
+
+export function installedVersionSufficient(installedVersion: string, requiredVersion: string)
+{
+    return requiredVersion === 'master' || installedVersion.localeCompare(requiredVersion) >= 0;
+}
+
+export function findLspServer(
+    context: vscode.ExtensionContext, directoryName: string, executableName: string) {
+    const localInstallation = 
+        path.join(context.extensionPath, directoryName, 'bin', executableName)
+    if (fs.existsSync(localInstallation)) {
+        return localInstallation;
+    } else if (hasbin.sync(executableName)) {
+        return executableName;
+    } else {
+        return null
+}
+}

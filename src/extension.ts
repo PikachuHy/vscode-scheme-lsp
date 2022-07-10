@@ -97,7 +97,7 @@ function startLspServer(context: vscode.ExtensionContext) {
         const env = setupEnvironment(context, schemeImplementation)
 
         spawn(languageServerCommand,
-              ["--log-level", debugLevel, "--listen", "41827", "--tcp", tcpPort.toString()],
+              ["--log-level", debugLevel, "--tcp", tcpPort.toString()],
               {
                   detached: false,
                   stdio: 'ignore',

@@ -89,13 +89,13 @@
 		    "schemeLsp.lspServerVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "master",
+			"default": "0.1.0",
 			"description": "Version of Scheme LSP Server"
 		    },
 		    "schemeLsp.jsonRpcVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "master",
+			"default": "0.2.4",
 			"description": "Version of JSON RPC library for Scheme"
 		    },
 		    "schemeLsp.lspServerTarballDirectoryUrl": {
