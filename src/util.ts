@@ -88,6 +88,7 @@ export function extractVersion(versionOutput: string) {
             return m[1]
         }
     }
+    return null
 }
 
 export function installedVersionSufficient(installedVersion: string, requiredVersion: string)
