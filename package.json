@@ -12,7 +12,7 @@
     "displayName": "Scheme LSP",
     "description": "An LSP-based extension for Scheme",
     "icon": "images/scheme-lsp-logo.png",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "engines": {
 	"vscode": "^1.55.0"
     },
@@ -73,7 +73,12 @@
 			"schemeLsp.tcpPort": {
 				"scope": "application",
 				"type": "integer",
-				"default": 4242
+				"default": 12512
+			},
+			"schemeLsp.replPort": {
+				"scope": "application",
+				"type": "integer",
+				"default": 148144
 			},
 		    "schemeLsp.trace.server": {
 			"scope": "window",

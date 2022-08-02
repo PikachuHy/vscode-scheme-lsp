@@ -89,6 +89,9 @@ function startLspServer(context: vscode.ExtensionContext) {
     const tcpPort: number = 
         vscode.workspace.getConfiguration().get('schemeLsp.tcpPort')!
 
+    const replPort: number =
+        vscode.workspace.getConfiguration().get('schemeLsp.replPort')!
+
     if (languageServerCommand == '') {
         throw new Error('Unable to find an LSP server. Aborting.')
     }
@@ -100,7 +103,7 @@ function startLspServer(context: vscode.ExtensionContext) {
               ["--log-level", debugLevel, "--tcp", tcpPort.toString()],
               {
                   detached: false,
-                  stdio: 'ignore',
+                  stdio: ['pipe', 'pipe', process.stderr],
                   env: env
               });
         resolve(true)       
