@@ -111,9 +111,9 @@ export function installGuileJsonRpcServer(context: vscode.ExtensionContext, call
     const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
     if (fs.existsSync(targetDir)) {
         fs.rmdirSync(targetDir, {recursive: true})
+        console.log(`Successfully deleted ${targetDir}`);
     }
 
-    console.log(`Successfully deleted ${targetDir}`);
     let witnessFile = path.join(targetDir, 'lib', 'guile', '3.0', 'site-ccache', 'json-rpc.go');
     fs.mkdirSync(path.dirname(witnessFile), {recursive: true})
     // create an empty file and monitor it for changes to detect installation end.

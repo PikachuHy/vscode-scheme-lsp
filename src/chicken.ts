@@ -95,9 +95,11 @@ export async function installChickenLspServer(
 {
     const targetDir = path.join(context.extensionPath, lspChickenServerDirName);
 
-    fs.rmdirSync(targetDir, {recursive: true})
+    if (fs.existsSync(targetDir)) {
+        fs.rmdirSync(targetDir, {recursive: true})
+        console.log(`Successfully deleted ${targetDir}`);
+    }
 
-    console.log(`Successfully deleted ${targetDir}`);
     let witnessFile = path.join(targetDir, 'bin', lspChickenServerExecutableName)
 
     fs.mkdirSync(path.dirname(witnessFile), {recursive: true})
