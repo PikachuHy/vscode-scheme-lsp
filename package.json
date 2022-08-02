@@ -89,13 +89,13 @@
 		    "schemeLsp.lspServerVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "0.1.0",
+			"default": "0.1.2",
 			"description": "Version of Scheme LSP Server"
 		    },
 		    "schemeLsp.jsonRpcVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "0.2.4",
+			"default": "0.2.5",
 			"description": "Version of JSON RPC library for Scheme"
 		    },
 		    "schemeLsp.lspServerTarballDirectoryUrl": {
@@ -127,20 +127,6 @@
 		    ".sld"
 		],
 		"configuration": "./scheme.configuration.json"
-	    }
-	],
-	"grammars": [
-	    {
-		"language": "scheme",
-		"scopeName": "source.scheme",
-		"path": "./syntaxes/scheme.tmLanguage"
-	    },
-	    {
-		"scopeName": "markdown.scheme.codeblock",
-		"path": "./syntaxes/scheme.markdown.tmLanguage.json",
-		"injectTo": [
-		    "text.html.markdown"
-		]
 	    }
 	]
     },

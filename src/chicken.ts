@@ -19,7 +19,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as hasbin from 'hasbin';
 import { execFileSync, execSync } from 'child_process';
 import { extractVersion, findLspServer, installedVersionSufficient } from './util';
 
@@ -78,7 +77,7 @@ export function ensureChickenLspServer(
 {
     if (findChickenLspServer(context) == null || force) {
         installChickenLspServer(context, callback)
-    } else if (installedVersionSufficient(getChickenLspServerVersion(context)!,  
+    } else if (! installedVersionSufficient(getChickenLspServerVersion(context)!,
                                           vscode.workspace
                                           .getConfiguration()
                                           .get('schemeLsp.lspServerVersion')!
@@ -96,24 +95,21 @@ export async function installChickenLspServer(
 {
     const targetDir = path.join(context.extensionPath, lspChickenServerDirName);
 
-    fs.unlink(targetDir, async (err) => {
-        if (err) {
-            console.error(`Could not delete ${targetDir}: ${err.message}`);
-        }
-        console.log(`Successfully deleted ${targetDir}`);
-        let witnessFile = path.join(targetDir, 'bin', lspChickenServerExecutableName)
+    fs.rmdirSync(targetDir, {recursive: true})
 
-        fs.mkdirSync(path.dirname(witnessFile), {recursive: true})
-        // create an empty file and monitor it for changes to detect installation end.
-        fs.writeFileSync(witnessFile, "")
-        const terminal = vscode.window.createTerminal(`Chicken LSP install`);
-        terminal.sendText(`CHICKEN_INSTALL_REPOSITORY=${targetDir} CHICKEN_INSTALL_PREFIX=${targetDir} chicken-install lsp-server`)
+    console.log(`Successfully deleted ${targetDir}`);
+    let witnessFile = path.join(targetDir, 'bin', lspChickenServerExecutableName)
 
-        fs.watch(witnessFile,
-            (eventType, filename) => {
-                if (eventType === 'change') {
-                    callback()
-                }
-            })
-      })
-}
+    fs.mkdirSync(path.dirname(witnessFile), {recursive: true})
+    // create an empty file and monitor it for changes to detect installation end.
+    fs.writeFileSync(witnessFile, "")
+    const terminal = vscode.window.createTerminal(`Chicken LSP install`);
+    terminal.sendText(`CHICKEN_INSTALL_REPOSITORY=${targetDir} CHICKEN_INSTALL_PREFIX=${targetDir} chicken-install lsp-server`)
+
+    fs.watch(witnessFile,
+        (eventType, filename) => {
+            if (eventType === 'change') {
+                callback()
+            }
+        })
+    }
