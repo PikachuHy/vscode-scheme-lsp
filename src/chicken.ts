@@ -37,7 +37,8 @@ export function chickenEnvironmentMap(context: vscode.ExtensionContext)
     const targetDir = path.join(context.extensionPath, lspChickenServerDirName)
     const currentRepositoryPath = execFileSync(
         'csi', 
-        ['-e', '(import (chicken platform)) (for-each (lambda (p) (display p) (display ":")) (repository-path))'])
+        ['-e', '(import (chicken platform)) (for-each (lambda (p) (display p) (display ":")) (repository-path))']
+    )
     return {
         ...process.env,
         CHICKEN_REPOSITORY_PATH: `${targetDir}:${currentRepositoryPath}`,
@@ -106,6 +107,7 @@ export async function installChickenLspServer(
     // create an empty file and monitor it for changes to detect installation end.
     fs.writeFileSync(witnessFile, "")
     const terminal = vscode.window.createTerminal(`Chicken LSP install`);
+    setupChickenEnvironment(context, terminal);
     terminal.sendText(`CHICKEN_INSTALL_REPOSITORY=${targetDir} CHICKEN_INSTALL_PREFIX=${targetDir} chicken-install lsp-server`)
 
     fs.watch(witnessFile,

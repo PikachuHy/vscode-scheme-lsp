@@ -89,7 +89,7 @@
 		    "schemeLsp.lspServerVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "0.1.2",
+			"default": "0.1.3",
 			"description": "Version of Scheme LSP Server"
 		    },
 		    "schemeLsp.jsonRpcVersion": {

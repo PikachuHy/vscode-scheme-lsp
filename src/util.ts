@@ -32,6 +32,7 @@ export async function downloadTarball(
 {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installers'))
     const installerPath= path.join(tmpDir, `${libraryName}.tar.gz`);
+    console.log(`downloading ${tarballUrl}`)
 
     https.get(tarballUrl, (res) => {
         const filePath = fs.createWriteStream(installerPath);
