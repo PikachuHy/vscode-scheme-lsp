@@ -12,7 +12,7 @@
     "displayName": "Scheme LSP",
     "description": "An LSP-based extension for Scheme",
     "icon": "images/scheme-lsp-logo.png",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "engines": {
 	"vscode": "^1.55.0"
     },
@@ -26,14 +26,10 @@
     "main": "./out/extension.js",
     "contributes": {
 	"commands": [
-	    {
-		"command": "scheme-lsp-client.launch",
-		"title": "Scheme LSP: launch server"
-	    },
-	    {
-		"command": "scheme-lsp-client.connect",
-		"title": "Scheme LSP: connect to LSP server"
-	    },
+		{
+			"command": "scheme-lsp-client.connect",
+			"title": "Scheme LSP: connect to LSP server"
+		},
 	    {
 		"command": "scheme-lsp-client.install-chicken-lsp-server",
 		"title": "Scheme LSP: install LSP server for CHICKEN to extension directory"
@@ -45,10 +41,6 @@
 	    {
 		"command": "scheme-lsp-client.select-implementation",
 		"title": "Scheme LSP: select scheme implementation"
-	    },
-	    {
-		"command": "scheme-lsp-client.load-file",
-		"title": "Scheme LSP: load current file"
 	    }
 	],
 	"configuration": [
@@ -56,18 +48,6 @@
 		"type": "object",
 		"title": "Scheme LSP Client",
 		"properties": {
-		    "schemeLsp.chickenReplCommand": {
-			"scope": "application",
-			"type": "string",
-			"default": "rlwrap csi -R r7rs",
-			"description": "Command to start CHICKEN's interpreter (csi)"
-		    },
-		    "schemeLsp.guileReplCommand": {
-			"scope": "application",
-			"type": "string",
-			"default": "guile --r7rs",
-			"description": "Command to start Guile scheme"
-		    },
 		    "schemeLsp.schemeImplementation": {
 			"scope": "application",
 			"type": "string",
@@ -75,14 +55,8 @@
 			    "chicken",
 			    "guile"
 			],
-			"default": "chicken",
+			"default": "guile",
 			"description": "Default scheme implementation"
-		    },
-		    "schemeLsp.lspServerPort": {
-			"scope": "application",
-			"type": "integer",
-			"default": 4242,
-			"description": "TCP localhost port where the LSP server listens to."
 		    },
 		    "schemeLsp.debugLevel": {
 			"scope": "application",
@@ -96,6 +70,16 @@
 			"default": "error",
 			"description": "Controls the verbosity of log messages on the server. 'error' means only error messages, 'debug' means maximal verbosity."
 		    },
+			"schemeLsp.tcpPort": {
+				"scope": "application",
+				"type": "integer",
+				"default": 12512
+			},
+			"schemeLsp.replPort": {
+				"scope": "application",
+				"type": "integer",
+				"default": 148144
+			},
 		    "schemeLsp.trace.server": {
 			"scope": "window",
 			"type": "string",
@@ -110,13 +94,13 @@
 		    "schemeLsp.lspServerVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "master",
+			"default": "0.1.3",
 			"description": "Version of Scheme LSP Server"
 		    },
 		    "schemeLsp.jsonRpcVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "master",
+			"default": "0.2.5",
 			"description": "Version of JSON RPC library for Scheme"
 		    },
 		    "schemeLsp.lspServerTarballDirectoryUrl": {
@@ -145,23 +129,9 @@
 		    ".scm",
 		    ".ss",
 		    ".sch",
-		    ".rkt"
+		    ".sld"
 		],
 		"configuration": "./scheme.configuration.json"
-	    }
-	],
-	"grammars": [
-	    {
-		"language": "scheme",
-		"scopeName": "source.scheme",
-		"path": "./syntaxes/scheme.tmLanguage"
-	    },
-	    {
-		"scopeName": "markdown.scheme.codeblock",
-		"path": "./syntaxes/scheme.markdown.tmLanguage.json",
-		"injectTo": [
-		    "text.html.markdown"
-		]
 	    }
 	]
     },
