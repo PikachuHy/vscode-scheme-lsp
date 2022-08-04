@@ -19,7 +19,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as hasbin from 'hasbin';
 import { execFileSync } from 'child_process';
 import {downloadJsonRpcTarball, downloadLspServerTarball, extractVersion, findLspServer, installedVersionSufficient} from './util';
 const lspGuileServerDirName = 'lsp-guile-server'
@@ -38,7 +37,7 @@ export function ensureGuileLspServer(
 {
     let guileLspServerCmd = findGuileLspServer(context)
     if (guileLspServerCmd == null || force) {
-        console.log('no guile LSP server command found. Installing it.')
+        vscode.window.showInformationMessage('No guile LSP server command found. Installing it.')
         installGuileJsonRpcServer(context, () => {
             installGuileLspServer(context, callback)
         })
@@ -111,7 +110,7 @@ export function installGuileJsonRpcServer(context: vscode.ExtensionContext, call
     const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
     if (fs.existsSync(targetDir)) {
         fs.rmdirSync(targetDir, {recursive: true})
-        console.log(`Successfully deleted ${targetDir}`);
+        vscode.window.showInformationMessage(`Successfully deleted ${targetDir}`);
     }
 
     let witnessFile = path.join(targetDir, 'lib', 'guile', '3.0', 'site-ccache', 'json-rpc.go');
@@ -126,7 +125,7 @@ export function installGuileJsonRpcServer(context: vscode.ExtensionContext, call
             fs.watch(witnessFile,
                 (eventType, filename) => {
                     if (eventType === 'change') {
-                        console.log('JSON RPC installed.')
+                        vscode.window.showInformationMessage('JSON RPC installed.')
                         callback()
                     }
                 }
@@ -137,12 +136,14 @@ export function installGuileJsonRpcServer(context: vscode.ExtensionContext, call
 
 export function installGuileLspServer(context: vscode.ExtensionContext, callback: () => void)
 {
+    vscode.window.showInformationMessage('Installing LSP server for Guile.')
     const targetDir = path.join(context.extensionPath, lspGuileServerDirName);
 
     let witnessFile = path.join(targetDir, 'bin', lspGuileServerExecutableName)
     fs.mkdirSync(path.dirname(witnessFile), {recursive: true})
     // create an empty file and monitor it for changes to detect installation end.
     fs.writeFileSync(witnessFile, "")
+    vscode.window.showInformationMessage('Downloading LSP server tarball.')
     downloadLspServerTarball(
         context,
         "lsp-guile-server",
@@ -151,7 +152,7 @@ export function installGuileLspServer(context: vscode.ExtensionContext, callback
             fs.watch(witnessFile,
                 (eventType, filename) => {
                     if (eventType === 'change') {
-                        console.log('Guile LSP server installed.')
+                        vscode.window.showInformationMessage('Guile LSP server installed.')
                         callback()
                     }
                 })

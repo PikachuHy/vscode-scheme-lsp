@@ -94,6 +94,7 @@ export async function installChickenLspServer(
     context: vscode.ExtensionContext,
     callback: () => void)
 {
+    vscode.window.showInformationMessage('Installing LSP server for CHICKEN.')
     const targetDir = path.join(context.extensionPath, lspChickenServerDirName);
 
     if (fs.existsSync(targetDir)) {
@@ -113,6 +114,7 @@ export async function installChickenLspServer(
     fs.watch(witnessFile,
         (eventType, filename) => {
             if (eventType === 'change') {
+                vscode.window.showInformationMessage('LSP server for CHICKEN installed.')
                 callback()
             }
         })

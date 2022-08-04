@@ -80,7 +80,7 @@ function startLspServer(context: vscode.ExtensionContext) {
                 findGuileLspServer(context) || '';
             break;
         default:
-            console.log('implementation not supported: ' + schemeImplementation);
+            vscode.window.showInformationMessage('implementation not supported: ' + schemeImplementation);
     }
 
     const debugLevel: string = 
@@ -154,12 +154,16 @@ function connectToLspServer(context: vscode.ExtensionContext) {
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     ensureSchemeLspServer(context, false, () => {
-        startLspServer(context)
-            .then((result) =>
-                setTimeout(
-                    () => vscode.commands.executeCommand('scheme-lsp-client.connect'),
-                    1000)
-                 )
+        setTimeout(
+            () => {
+                startLspServer(context)
+                .then((result) =>
+                    setTimeout(
+                        () => vscode.commands.executeCommand('scheme-lsp-client.connect'),
+                        1000)
+                    )
+            },
+            1000)
     })
 
     context.subscriptions.push(

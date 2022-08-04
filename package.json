@@ -12,7 +12,7 @@
     "displayName": "Scheme LSP",
     "description": "An LSP-based extension for Scheme",
     "icon": "images/scheme-lsp-logo.png",
-    "version": "0.2.0",
+    "version": "0.2.2",
     "engines": {
 	"vscode": "^1.55.0"
     },
@@ -94,7 +94,7 @@
 		    "schemeLsp.lspServerVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "0.1.3",
+			"default": "0.1.4",
 			"description": "Version of Scheme LSP Server"
 		    },
 		    "schemeLsp.jsonRpcVersion": {
