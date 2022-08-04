@@ -91,12 +91,18 @@
 			"default": "off",
 			"description": "Traces the communication between VS Code and the language server."
 		    },
-		    "schemeLsp.lspServerVersion": {
+		    "schemeLsp.chickenLspServerMinVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "0.1.7",
-			"description": "Version of Scheme LSP Server"
+			"default": "0.1.6",
+			"description": "Minimum version of chicken-lsp-server required"
 		    },
+			"schemeLsp.guileLspServerMinVersion": {
+				"scope": "application",
+				"type": "string",
+				"default": "0.1.7",
+				"description": "Minimum version of guile-lsp-server required"
+			},
 		    "schemeLsp.jsonRpcVersion": {
 			"scope": "application",
 			"type": "string",

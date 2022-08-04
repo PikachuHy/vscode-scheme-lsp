@@ -56,10 +56,8 @@ export async function downloadJsonRpcTarball(
     const tarballDirectoryUrl: string = 
         vscode.workspace.getConfiguration().get('schemeLsp.jsonRpcTarballDirectoryUrl') !
 
-    const jsonRpcVersion: string = 
-        vscode.workspace.getConfiguration().get('schemeLsp.jsonRpcVersion')!
     const tarballUrl: string =
-        new URL(`${jsonRpcVersion}.tar.gz`, tarballDirectoryUrl).toString()
+        new URL('master.tar.gz', tarballDirectoryUrl).toString()
 
     return downloadTarball(tarballUrl, "scheme-json-rpc", callback)
 }
@@ -72,10 +70,8 @@ export async function downloadLspServerTarball(
     const tarballDirectoryUrl: string = 
         vscode.workspace.getConfiguration().get('schemeLsp.lspServerTarballDirectoryUrl')!
 
-    const lspServerVersion:string = 
-        vscode.workspace.getConfiguration().get('schemeLsp.lspServerVersion')!
     const tarballUrl: string =
-        new URL(`${lspServerVersion}.tar.gz`, tarballDirectoryUrl).toString()
+        new URL('master.tar.gz', tarballDirectoryUrl).toString()
 
     return await downloadTarball(tarballUrl, "scheme-lsp-server", callback)
 }

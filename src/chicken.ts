@@ -79,9 +79,9 @@ export function ensureChickenLspServer(
     if (findChickenLspServer(context) == null || force) {
         installChickenLspServer(context, callback)
     } else if (! installedVersionSufficient(getChickenLspServerVersion(context)!,
-                                          vscode.workspace
-                                          .getConfiguration()
-                                          .get('schemeLsp.lspServerVersion')!
+                                            vscode.workspace
+                                               .getConfiguration()
+                                               .get('schemeLsp.chickenLspServerMinVersion')!
     )) {
         vscode.window.showInformationMessage('Old version of LSP. Reinstalling it.');
         installChickenLspServer(context, callback)

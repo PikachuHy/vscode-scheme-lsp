@@ -43,7 +43,7 @@ export function ensureGuileLspServer(
         })
     } else if (! installedVersionSufficient(getGuileLspServerVersion(context)!,  
                                             vscode.workspace.getConfiguration()
-                                                            .get('schemeLsp.lspServerVersion')!
+                                                            .get('schemeLsp.guileLspServerMinVersion')!
     )) {
         vscode.window.showInformationMessage('Old version of LSP. Reinstalling it')
         installGuileJsonRpcServer(context, () => {
