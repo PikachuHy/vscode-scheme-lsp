@@ -58,7 +58,7 @@ export function setupGuileEnvironment(context: vscode.ExtensionContext, terminal
 {
     const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
     terminal.sendText(`export GUILE_LOAD_COMPILED_PATH=.:...:${targetDir}:${targetDir}/lib/guile/3.0/site-ccache/:$GUILE_LOAD_COMPILED_PATH\n`)
-    terminal.sendText(`export GUILE_LOAD_PATH=${targetDir}:${targetDir}/share/guile/3.0/:$GUILE_LOAD_PATH\n`)
+    terminal.sendText(`export GUILE_LOAD_PATH=.:...:${targetDir}:${targetDir}/share/guile/site/3.0/:$GUILE_LOAD_PATH\n`)
 }
 
 export function guileEnvironmentMap(context: vscode.ExtensionContext)
