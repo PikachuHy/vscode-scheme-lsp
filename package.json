@@ -12,7 +12,7 @@
     "displayName": "Scheme LSP",
     "description": "An LSP-based extension for Scheme",
     "icon": "images/scheme-lsp-logo.png",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "engines": {
 	"vscode": "^1.55.0"
     },
@@ -94,15 +94,15 @@
 		    "schemeLsp.chickenLspServerMinVersion": {
 			"scope": "application",
 			"type": "string",
-			"default": "0.1.6",
+			"default": "0.1.8",
 			"description": "Minimum version of chicken-lsp-server required"
 		    },
-			"schemeLsp.guileLspServerMinVersion": {
-				"scope": "application",
-				"type": "string",
-				"default": "0.1.7",
-				"description": "Minimum version of guile-lsp-server required"
-			},
+		    "schemeLsp.guileLspServerMinVersion": {
+			"scope": "application",
+			"type": "string",
+			"default": "0.1.8",
+			"description": "Minimum version of guile-lsp-server required"
+		    },
 		    "schemeLsp.jsonRpcVersion": {
 			"scope": "application",
 			"type": "string",
