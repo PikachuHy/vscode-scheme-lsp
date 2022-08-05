@@ -66,8 +66,8 @@ export function guileEnvironmentMap(context: vscode.ExtensionContext)
     const targetDir = path.join(context.extensionPath, lspGuileServerDirName)
     return {
         ...process.env,
-        GUILE_LOAD_COMPILED_PATH: `${targetDir}:${targetDir}/lib/guile/3.0/site-ccache/:...:${process.env.GUILE_LOAD_COMPILED_PATH}`,
-        GUILE_LOAD_PATH: `${targetDir}:${targetDir}/share/guile/site/3.0/:...:${process.env.GUILE_LOAD_PATH}:`
+        GUILE_LOAD_COMPILED_PATH: `.:...:${targetDir}:${targetDir}/lib/guile/3.0/site-ccache/:${process.env.GUILE_LOAD_COMPILED_PATH}`,
+        GUILE_LOAD_PATH: `.:...:${targetDir}:${targetDir}/share/guile/site/3.0/:${process.env.GUILE_LOAD_PATH}:`
     }
 }
 
@@ -152,8 +152,8 @@ export function installGuileLspServer(context: vscode.ExtensionContext, callback
             fs.watch(witnessFile,
                 (eventType, filename) => {
                     if (eventType === 'change') {
-                        vscode.window.showInformationMessage('Guile LSP server installed.')
-                        callback()
+                        vscode.window.showInformationMessage('Guile LSP server installed. Restarting extension.')
+                        vscode.commands.executeCommand('scheme-lsp-client.reload-extension')
                     }
                 })
         })

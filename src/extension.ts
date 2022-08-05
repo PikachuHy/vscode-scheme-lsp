@@ -154,17 +154,14 @@ function connectToLspServer(context: vscode.ExtensionContext) {
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     ensureSchemeLspServer(context, false, () => {
-        setTimeout(
-            () => {
-                startLspServer(context)
-                .then((result) =>
-                    setTimeout(
-                        () => vscode.commands.executeCommand('scheme-lsp-client.connect'),
-                        1000)
-                    )
-            },
-            1000)
-    })
+        startLspServer(context)
+            .then((result) =>
+                setTimeout(
+                    () => connectToLspServer(context),
+                    1000)
+                )
+        },
+    )
 
     context.subscriptions.push(
         vscode.commands.registerCommand(
@@ -180,6 +177,18 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand(
             'scheme-lsp-client.install-guile-lsp-server',
             function () {ensureGuileLspServer(context, true)}));
+
+    context.subscriptions.push(vscode.commands.registerCommand("scheme-lsp-client.reload-extension", (_) => {
+        deactivate();
+        for (const sub of context.subscriptions) {
+            try {
+               sub.dispose();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        activate(context);
+    }));
 }
 
 // this method is called when your extension is deactivated
