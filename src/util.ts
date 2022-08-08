@@ -89,7 +89,7 @@ export function extractVersion(versionOutput: string) {
 
 export function installedVersionSufficient(installedVersion: string, requiredVersion: string)
 {
-    return requiredVersion === 'master' || installedVersion.localeCompare(requiredVersion) >= 0;
+    return requiredVersion === 'master' || installedVersion.localeCompare(requiredVersion, undefined, {numeric: true}) >= 0;
 }
 
 export function findLspServer(
