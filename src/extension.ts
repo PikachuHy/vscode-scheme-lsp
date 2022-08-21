@@ -139,7 +139,7 @@ function connectToLspServer(context: vscode.ExtensionContext) {
         }
     };
     client = new LanguageClient(
-        'schemeLspClient',
+        'schemeLsp',
         'Scheme LSP Client',
         serverOptions,
         clientOptions
