@@ -31,6 +31,7 @@ import {
 } from 'vscode-languageclient';
 import { ensureChickenLspServer, chickenEnvironmentMap, findChickenLspServer } from './chicken';
 import { ensureGuileLspServer, guileEnvironmentMap, findGuileLspServer } from './guile';
+import { ensureGambitLspServer, findGambitLspServer } from './gambit';
 import { spawn } from 'child_process';
 
 let client: LanguageClient;
@@ -49,6 +50,8 @@ export function ensureSchemeLspServer(
         ensureGuileLspServer(context, force, callback);
     } else if (schemeImplementation === "chicken") {
         ensureChickenLspServer(context, force, callback);
+    } else if (schemeImplementation === "gambit") {
+        ensureGambitLspServer(context, force, callback)
     }
 }
 
@@ -62,6 +65,8 @@ function setupEnvironment(context: vscode.ExtensionContext, implementation: stri
         case 'guile':
             env = guileEnvironmentMap(context)
             break;
+        case 'gambit':
+            env = process.env
     }
     return env
 }
@@ -78,6 +83,10 @@ function startLspServer(context: vscode.ExtensionContext) {
         case 'guile':
             languageServerCommand = 
                 findGuileLspServer(context) || '';
+            break;
+        case 'gambit':
+            languageServerCommand =
+                findGambitLspServer(context) || ''
             break;
         default:
             vscode.window.showInformationMessage('implementation not supported: ' + schemeImplementation);
@@ -98,6 +107,7 @@ function startLspServer(context: vscode.ExtensionContext) {
 
     return new Promise((resolve, reject) => {
         const env = setupEnvironment(context, schemeImplementation)
+        vscode.window.showInformationMessage(`Running command ${languageServerCommand}`);
 
         spawn(languageServerCommand,
               ["--log-level", debugLevel, "--tcp", tcpPort.toString()],
@@ -161,7 +171,7 @@ export function activate(context: vscode.ExtensionContext) {
             .then((result) =>
                 setTimeout(
                     () => connectToLspServer(context),
-                    1000)
+                    2000)
                 )
         },
     )}

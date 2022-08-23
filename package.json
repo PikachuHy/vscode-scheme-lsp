@@ -53,6 +53,7 @@
 			"type": "string",
 			"enum": [
 			    "chicken",
+			    "gambit",
 			    "guile"
 			],
 			"default": "guile",
