@@ -20,7 +20,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execFileSync } from 'child_process';
-import {downloadJsonRpcTarball, downloadLspServerTarball, extractVersion, findLspServer, installedVersionSufficient} from './util';
+import {downloadJsonRpcTarball, downloadLspServerTarball, extractVersion, findLspServer, installedVersionSufficient, promptForMissingTool} from './util';
 const lspGuileServerDirName = 'lsp-guile-server'
 const lspGuileServerExecutableName = 'guile-lsp-server'
 
@@ -35,20 +35,20 @@ export function ensureGuileLspServer(
     callback: () => void = () => {}
     )
 {
-    let guileLspServerCmd = findGuileLspServer(context)
+    const guileLspServerCmd = findGuileLspServer(context)
+    const installLspServerFunc = () => {
+        installGuileLspServer(context, callback)
+    }
+    const installJsonRpcFunc = () => {
+        installGuileJsonRpcServer(context, installLspServerFunc)
+    }
     if (guileLspServerCmd == null || force) {
-        vscode.window.showInformationMessage('No guile LSP server command found. Installing it.')
-        installGuileJsonRpcServer(context, () => {
-            installGuileLspServer(context, callback)
-        })
+        promptForMissingTool("Lsp Server for Guile is missing.", installJsonRpcFunc);
     } else if (! installedVersionSufficient(getGuileLspServerVersion(context)!,  
                                             vscode.workspace.getConfiguration()
                                                             .get('schemeLsp.guileLspServerMinVersion')!
     )) {
-        vscode.window.showInformationMessage('Old version of LSP. Reinstalling it')
-        installGuileJsonRpcServer(context, () => {
-            installGuileLspServer(context, callback)
-        })
+        promptForMissingTool("Lsp Server for Guile is outdated.", installJsonRpcFunc);
     } else {
         callback()
     }

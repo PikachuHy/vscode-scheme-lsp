@@ -104,3 +104,19 @@ export function findLspServer(
         return null
 }
 }
+
+export async function promptForMissingTool(msg: string, installFunction: () => void)
+{
+    const selected = await vscode.window.showErrorMessage(
+		`"${msg}". Install it automatically?.`,
+        ...['Install']
+	);
+	switch (selected) {
+		case 'Install':
+			installFunction();
+			break;
+		default:
+			break;
+	}
+}
+
