@@ -20,7 +20,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execFileSync, execSync } from 'child_process';
-import { extractVersion, findLspServer, installedVersionSufficient } from './util';
+import { extractVersion, findLspServer, installedVersionSufficient, promptForMissingTool } from './util';
 
 const lspChickenServerDirName = 'lsp-chicken-server'
 const lspChickenServerExecutableName = 'chicken-lsp-server'
@@ -76,15 +76,17 @@ export function ensureChickenLspServer(
     force: boolean = false,
     callback: () => void = () => {})
 {
-    if (findChickenLspServer(context) == null || force) {
+    const installFunc = () => {
         installChickenLspServer(context, callback)
+    }
+    if (findChickenLspServer(context) == null || force) {
+        promptForMissingTool("Lsp Server for CHICKEN is missing", installFunc);
     } else if (! installedVersionSufficient(getChickenLspServerVersion(context)!,
                                             vscode.workspace
                                                .getConfiguration()
                                                .get('schemeLsp.chickenLspServerMinVersion')!
     )) {
-        vscode.window.showInformationMessage('Old version of LSP. Reinstalling it.');
-        installChickenLspServer(context, callback)
+        promptForMissingTool("Lsp Server for CHICKEN is outdated", installFunc);
     } else {
         callback()
     }
