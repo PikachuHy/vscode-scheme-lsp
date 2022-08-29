@@ -46,12 +46,12 @@ export function ensureSchemeLspServer(
     const schemeImplementation = 
         vscode.workspace.getConfiguration().get('schemeLsp.schemeImplementation')
 
-    if (schemeImplementation === "guile") {
-        ensureGuileLspServer(context, force, callback);
-    } else if (schemeImplementation === "chicken") {
+    if (schemeImplementation === 'chicken') {
         ensureChickenLspServer(context, force, callback);
-    } else if (schemeImplementation === "gambit") {
-        ensureGambitLspServer(context, force, callback)
+    } else if (schemeImplementation === 'gambit') {
+        ensureGambitLspServer(context, force, callback);
+    } else if (schemeImplementation === 'guile') {
+        ensureGuileLspServer(context, force, callback)
     }
 }
 
@@ -62,11 +62,12 @@ function setupEnvironment(context: vscode.ExtensionContext, implementation: stri
         case 'chicken':
             env = chickenEnvironmentMap(context)
             break
+        case 'gambit':
+            env = process.env
+            break;
         case 'guile':
             env = guileEnvironmentMap(context)
             break;
-        case 'gambit':
-            env = process.env
     }
     return env
 }
@@ -80,13 +81,13 @@ function startLspServer(context: vscode.ExtensionContext) {
             languageServerCommand = 
                 findChickenLspServer(context) || '';
             break;
-        case 'guile':
-            languageServerCommand = 
-                findGuileLspServer(context) || '';
-            break;
         case 'gambit':
             languageServerCommand =
                 findGambitLspServer(context) || ''
+            break;
+        case 'guile':
+            languageServerCommand = 
+                findGuileLspServer(context) || '';
             break;
         default:
             vscode.window.showInformationMessage('implementation not supported: ' + schemeImplementation);
@@ -154,6 +155,7 @@ function connectToLspServer(context: vscode.ExtensionContext) {
         serverOptions,
         clientOptions
     );
+
     // enable tracing (.Off, .Messages, Verbose)
     client.trace = Trace.Verbose;
     let disposable = client.start();    
@@ -185,6 +187,11 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand(
             'scheme-lsp-client.install-chicken-lsp-server',
             function () {ensureChickenLspServer(context, true)}));
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            'scheme-lsp-client.install-gambit-lsp-server',
+                function () {ensureGambitLspServer(context, true)}));
 
     context.subscriptions.push(
         vscode.commands.registerCommand(

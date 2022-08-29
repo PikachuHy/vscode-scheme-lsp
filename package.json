@@ -34,6 +34,10 @@
 		"command": "scheme-lsp-client.install-chicken-lsp-server",
 		"title": "Scheme LSP: install LSP server for CHICKEN to extension directory"
 	    },
+		{
+			"command": "scheme-lsp-client.install-gambit-lsp-server",
+			"title": "Scheme LSP: install LSP server for Gambit to extension directory"
+			},
 	    {
 		"command": "scheme-lsp-client.install-guile-lsp-server",
 		"title": "Scheme LSP: install LSP server for Guile to extension directory"
