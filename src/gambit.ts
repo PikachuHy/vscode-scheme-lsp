@@ -17,63 +17,65 @@
 
 
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
 import { exec, execFile, execFileSync, spawnSync } from 'child_process';
-import {downloadJsonRpcTarball, downloadLspServerTarball, extractVersion, findLspServer, installedVersionSufficient, promptForMissingTool} from './util';
-import hasbin = require('hasbin');
-const lspGambitServerExecutableName = 'gambit-lsp-server'
-const lspGambitServerDirName = 'lsp-gambit-server/tools'
+import { downloadJsonRpcTarball, downloadLspServerTarball, extractVersion, findLspServer, installedVersionSufficient, promptForMissingTool } from './util';
 
-export function findGambitLspServer(context: vscode.ExtensionContext)
-{
+const lspGambitServerExecutableName = 'gambit-lsp-server'
+const lspGambitServerDirName = 'tools'
+
+export function findGambitLspServer(context: vscode.ExtensionContext) {
     return findLspServer(context, lspGambitServerDirName, lspGambitServerExecutableName);
 }
 
-export function isGambitLspServerInstalled(context: vscode.ExtensionContext)
-{
+export function isGambitLspServerInstalled(context: vscode.ExtensionContext) {
     let res = spawnSync('gsi',
         ['-e', '(import (codeberg.org/rgherdt/scheme-lsp-server gambit util)) (exit)']
-    )    
+    )
     return res.status == 0
+}
+
+function probeAndInstall(libName: string) {
+    let res = spawnSync('gsi',
+        ['-e', '(import libName)'])
+    if (res.status != 0) {
+        execFile('gsi', ['-install', libName],
+            (error, stdout, stderr) => {
+                if (error) {
+                    vscode.window.showInformationMessage(`error installing ${libName}: ${error}`);
+                    return
+                }
+            })
+    }
 }
 
 export function ensureGambitLspServer(
     context: vscode.ExtensionContext,
     force: boolean = false,
-    callback: () => void = () => {}
-    )
-{
+    callback: () => void = () => { }
+) {
     const isInstalled = isGambitLspServerInstalled(context)
     const installLspServerFunc = () => {
-        vscode.window.showInformationMessage(`Installing LSP server for Gambit. This may take some minutes.`)
-        execFile('gsi', [
-            '-install',
-            'codeberg.org/rgherdt/scheme-lsp-server'
-        ], (error, stdout, stderr) => /*{
-            if (error) {
-                vscode.window.showInformationMessage(`error installing LSP server for Gambit: ${error}`);
-                return
-            }
-            execFile('gsc', [
-                'codeberg.org/rgherdt/scheme-lsp-server/gambit/util',
-                'codeberg.org/rgherdt/scheme-lsp-server/trie',
-                'codeberg.org/rgherdt/scheme-lsp-server/document',
-                'codeberg.org/rgherdt/scheme-lsp-server/parse',
-                'codeberg.org/rgherdt/scheme-lsp-server/adapter',
-                'codeberg.org/rgherdt/scheme-lsp-server/gambit',
-                'codeberg.org/rgherdt/scheme-lsp-server/lsp-server',
-            ], (error, stdout, stderr) => */{
-                if (error) {
-                    vscode.window.showInformationMessage(`error compiling LSP server modules: ${error}`);
-                    return
-                }
-                callback()
-            })    
+        vscode.window.showInformationMessage(`Installing LSP server for Gambit.`)
+
+        let libs = [
+            'codeberg.org/rgherdt/srfi',
+            'github.com/ashinn/irregex',
+            'github.com/rgherdt/chibi-scheme',
+            'codeberg.org/rgherdt/scheme-json-rpc/json-rpc',
+            'codeberg.org/rgherdt/scheme-lsp-server/lsp-server'
+        ]
+
+        libs.forEach((libName: string) => {
+            probeAndInstall(libName)
+        })
+
+        vscode.window.showInformationMessage(`LSP server for Gambit successfully installed. Restarting extension.`)
+
+        vscode.commands.executeCommand('scheme-lsp-client.reload-extension')
     }
 
-    if (! isInstalled) {
-        promptForMissingTool("Lsp Server for Gambit not found.", installLspServerFunc);        
+    if (!isInstalled) {
+        promptForMissingTool("Lsp Server for Gambit not found.", installLspServerFunc);
     } else {
         callback()
     }

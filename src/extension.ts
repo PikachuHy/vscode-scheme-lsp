@@ -32,7 +32,6 @@ import {
 import { ensureChickenLspServer, chickenEnvironmentMap, findChickenLspServer } from './chicken';
 import { ensureGuileLspServer, guileEnvironmentMap, findGuileLspServer } from './guile';
 import { ensureGambitLspServer, findGambitLspServer } from './gambit';
-import { spawn } from 'child_process';
 
 let client: LanguageClient;
 let socket: net.Socket;
@@ -92,62 +91,41 @@ function startLspServer(context: vscode.ExtensionContext) {
         default:
             vscode.window.showInformationMessage('implementation not supported: ' + schemeImplementation);
     }
+    vscode.window.showInformationMessage(`Starting ${languageServerCommand}`)
 
     const debugLevel: string = 
         vscode.workspace.getConfiguration().get('schemeLsp.debugLevel') || "error";
-
-    const tcpPort: number = 
-        vscode.workspace.getConfiguration().get('schemeLsp.tcpPort')!
-
-    const replPort: number =
-        vscode.workspace.getConfiguration().get('schemeLsp.replPort')!
 
     if (languageServerCommand == '') {
         throw new Error('Unable to find an LSP server. Aborting.')
     }
 
-    return new Promise((resolve, reject) => {
-        const env = setupEnvironment(context, schemeImplementation)
-        vscode.window.showInformationMessage(`Running command ${languageServerCommand}`);
+    const env = setupEnvironment(context, schemeImplementation)
 
-        spawn(languageServerCommand,
-              ["--log-level", debugLevel, "--tcp", tcpPort.toString()],
-              {
-                  detached: false,
-                  stdio: ['pipe', 'pipe', process.stderr],
-                  env: env
-              });
-        resolve(true)       
-    })
-}
-
-
-function connectToLspServer(context: vscode.ExtensionContext) {
-    const tcpPort: number = 
-        vscode.workspace.getConfiguration().get('schemeLsp.tcpPort') || 4242;
-    let connectionInfo = {
-        port: tcpPort
+    const executable = {
+        command: languageServerCommand,
+        args: ['--log-level', debugLevel],
+        options: {
+            env: env
+        }
     };
-    socket = net.connect(connectionInfo);
-    writer = new SocketMessageWriter(socket);
-    let serverOptions: ServerOptions = () => {
-        // Connect to language server via socket
-        let result: StreamInfo = {
-            writer: socket,
-            reader: socket,
-            detached: true
-        };
-        return Promise.resolve(result);
-        
-    };
-    
+
+    const serverOptions = {
+        run: executable,
+        debug: executable,
+    }
+
     let clientOptions: LanguageClientOptions = {
         // Register the server for plain text documents
         documentSelector: [{ scheme: 'file', language: 'scheme' }],
         synchronize: {
             // Notify the server about file changes to '.clientrc files contained in the workspace
             fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-        }
+        },
+        uriConverters: {
+            code2Protocol: (uri) => uri.toString(true),
+            protocol2Code: (str) => vscode.Uri.parse(str),
+        },
     };
     client = new LanguageClient(
         'schemeLsp',
@@ -162,6 +140,47 @@ function connectToLspServer(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
+
+function connectToLspServer(context: vscode.ExtensionContext) {
+    const tcpPort: number =
+        vscode.workspace.getConfiguration().get('schemeLsp.tcpPort') || 4242;
+    let connectionInfo = {
+        port: tcpPort
+    };
+    socket = net.connect(connectionInfo);
+    writer = new SocketMessageWriter(socket);
+    let serverOptions: ServerOptions = () => {
+        // Connect to language server via socket
+        let result: StreamInfo = {
+            writer: socket,
+            reader: socket,
+            detached: true
+        };
+        return Promise.resolve(result);
+
+    };
+
+    let clientOptions: LanguageClientOptions = {
+        // Register the server for plain text documents
+        documentSelector: [{ scheme: 'file', language: 'scheme' }],
+        synchronize: {
+            // Notify the server about file changes to '.clientrc files contained in the workspace
+            fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+        }
+    };
+    client = new LanguageClient(
+        'schemeLsp',
+        'Scheme LSP Client',
+        serverOptions,
+        clientOptions
+    );
+    // enable tracing (.Off, .Messages, Verbose)
+    client.trace = Trace.Verbose;
+    let disposable = client.start();
+    context.subscriptions.push(disposable);
+
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -169,14 +188,9 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.getConfiguration().get('schemeLsp.autoStart')!;
     if (autoStart) {
         ensureSchemeLspServer(context, false, () => {
-        startLspServer(context)
-            .then((result) =>
-                setTimeout(
-                    () => connectToLspServer(context),
-                    2000)
-                )
-        },
-    )}
+            startLspServer(context)
+        })
+    }
 
     context.subscriptions.push(
         vscode.commands.registerCommand(

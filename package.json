@@ -77,18 +77,13 @@
 			    "info",
 			    "debug"
 			],
-			"default": "error",
+			"default": "info",
 			"description": "Controls the verbosity of log messages on the server. 'error' means only error messages, 'debug' means maximal verbosity."
 		    },
 		    "schemeLsp.tcpPort": {
 			"scope": "application",
 			"type": "integer",
 			"default": 12512
-		    },
-		    "schemeLsp.replPort": {
-			"scope": "application",
-			"type": "integer",
-			"default": 148144
 		    },
 		    "schemeLsp.trace.server": {
 			"scope": "window",
