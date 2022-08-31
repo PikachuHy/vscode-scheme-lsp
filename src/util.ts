@@ -96,13 +96,17 @@ export function findLspServer(
     context: vscode.ExtensionContext, directoryName: string, executableName: string) {
     const localInstallation = 
         path.join(context.extensionPath, directoryName, 'bin', executableName)
-    if (fs.existsSync(localInstallation)) {
+    const alternativePath = 
+        path.join(context.extensionPath, directoryName, executableName)
+    if (hasbin.sync(executableName)) {
+        return executableName;   
+    } else if (fs.existsSync(localInstallation)) {
         return localInstallation;
-    } else if (hasbin.sync(executableName)) {
-        return executableName;
+    } else if (fs.existsSync(alternativePath)) {
+        return alternativePath;
     } else {
         return null
-}
+    }
 }
 
 export async function promptForMissingTool(msg: string, installFunction: () => void)

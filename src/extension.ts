@@ -31,7 +31,7 @@ import {
 } from 'vscode-languageclient';
 import { ensureChickenLspServer, chickenEnvironmentMap, findChickenLspServer } from './chicken';
 import { ensureGuileLspServer, guileEnvironmentMap, findGuileLspServer } from './guile';
-import { spawn } from 'child_process';
+import { ensureGambitLspServer, findGambitLspServer } from './gambit';
 
 let client: LanguageClient;
 let socket: net.Socket;
@@ -45,10 +45,12 @@ export function ensureSchemeLspServer(
     const schemeImplementation = 
         vscode.workspace.getConfiguration().get('schemeLsp.schemeImplementation')
 
-    if (schemeImplementation === "guile") {
-        ensureGuileLspServer(context, force, callback);
-    } else if (schemeImplementation === "chicken") {
+    if (schemeImplementation === 'chicken') {
         ensureChickenLspServer(context, force, callback);
+    } else if (schemeImplementation === 'gambit') {
+        ensureGambitLspServer(context, force, callback);
+    } else if (schemeImplementation === 'guile') {
+        ensureGuileLspServer(context, force, callback)
     }
 }
 
@@ -59,6 +61,9 @@ function setupEnvironment(context: vscode.ExtensionContext, implementation: stri
         case 'chicken':
             env = chickenEnvironmentMap(context)
             break
+        case 'gambit':
+            env = process.env
+            break;
         case 'guile':
             env = guileEnvironmentMap(context)
             break;
@@ -75,6 +80,10 @@ function startLspServer(context: vscode.ExtensionContext) {
             languageServerCommand = 
                 findChickenLspServer(context) || '';
             break;
+        case 'gambit':
+            languageServerCommand =
+                findGambitLspServer(context) || ''
+            break;
         case 'guile':
             languageServerCommand = 
                 findGuileLspServer(context) || '';
@@ -82,37 +91,58 @@ function startLspServer(context: vscode.ExtensionContext) {
         default:
             vscode.window.showInformationMessage('implementation not supported: ' + schemeImplementation);
     }
+    vscode.window.showInformationMessage(`Starting ${languageServerCommand}`)
 
     const debugLevel: string = 
         vscode.workspace.getConfiguration().get('schemeLsp.debugLevel') || "error";
-
-    const tcpPort: number = 
-        vscode.workspace.getConfiguration().get('schemeLsp.tcpPort')!
-
-    const replPort: number =
-        vscode.workspace.getConfiguration().get('schemeLsp.replPort')!
 
     if (languageServerCommand == '') {
         throw new Error('Unable to find an LSP server. Aborting.')
     }
 
-    return new Promise((resolve, reject) => {
-        const env = setupEnvironment(context, schemeImplementation)
+    const env = setupEnvironment(context, schemeImplementation)
 
-        spawn(languageServerCommand,
-              ["--log-level", debugLevel, "--tcp", tcpPort.toString()],
-              {
-                  detached: false,
-                  stdio: ['pipe', 'pipe', process.stderr],
-                  env: env
-              });
-        resolve(true)       
-    })
+    const executable = {
+        command: languageServerCommand,
+        args: ['--log-level', debugLevel],
+        options: {
+            env: env
+        }
+    };
+
+    const serverOptions = {
+        run: executable,
+        debug: executable,
+    }
+
+    let clientOptions: LanguageClientOptions = {
+        // Register the server for plain text documents
+        documentSelector: [{ scheme: 'file', language: 'scheme' }],
+        synchronize: {
+            // Notify the server about file changes to '.clientrc files contained in the workspace
+            fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+        },
+        uriConverters: {
+            code2Protocol: (uri) => uri.toString(true),
+            protocol2Code: (str) => vscode.Uri.parse(str),
+        },
+    };
+    client = new LanguageClient(
+        'schemeLsp',
+        'Scheme LSP Client',
+        serverOptions,
+        clientOptions
+    );
+
+    // enable tracing (.Off, .Messages, Verbose)
+    client.trace = Trace.Verbose;
+    let disposable = client.start();    
+    context.subscriptions.push(disposable);
 }
 
 
 function connectToLspServer(context: vscode.ExtensionContext) {
-    const tcpPort: number = 
+    const tcpPort: number =
         vscode.workspace.getConfiguration().get('schemeLsp.tcpPort') || 4242;
     let connectionInfo = {
         port: tcpPort
@@ -127,9 +157,9 @@ function connectToLspServer(context: vscode.ExtensionContext) {
             detached: true
         };
         return Promise.resolve(result);
-        
+
     };
-    
+
     let clientOptions: LanguageClientOptions = {
         // Register the server for plain text documents
         documentSelector: [{ scheme: 'file', language: 'scheme' }],
@@ -146,8 +176,9 @@ function connectToLspServer(context: vscode.ExtensionContext) {
     );
     // enable tracing (.Off, .Messages, Verbose)
     client.trace = Trace.Verbose;
-    let disposable = client.start();    
+    let disposable = client.start();
     context.subscriptions.push(disposable);
+
 }
 
 // this method is called when your extension is activated
@@ -157,14 +188,9 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.getConfiguration().get('schemeLsp.autoStart')!;
     if (autoStart) {
         ensureSchemeLspServer(context, false, () => {
-        startLspServer(context)
-            .then((result) =>
-                setTimeout(
-                    () => connectToLspServer(context),
-                    1000)
-                )
-        },
-    )}
+            startLspServer(context)
+        })
+    }
 
     context.subscriptions.push(
         vscode.commands.registerCommand(
@@ -175,6 +201,11 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand(
             'scheme-lsp-client.install-chicken-lsp-server',
             function () {ensureChickenLspServer(context, true)}));
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            'scheme-lsp-client.install-gambit-lsp-server',
+                function () {ensureGambitLspServer(context, true)}));
 
     context.subscriptions.push(
         vscode.commands.registerCommand(
