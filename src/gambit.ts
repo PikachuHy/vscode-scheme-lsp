@@ -23,8 +23,30 @@ import { downloadJsonRpcTarball, downloadLspServerTarball, extractVersion, findL
 const lspGambitServerExecutableName = 'gambit-lsp-server'
 const lspGambitServerDirName = 'tools'
 
+const dependencies = [
+    'codeberg.org/rgherdt/srfi',
+    'github.com/ashinn/irregex',
+    'github.com/rgherdt/chibi-scheme',
+    'codeberg.org/rgherdt/scheme-json-rpc/json-rpc',
+    'codeberg.org/rgherdt/scheme-lsp-server/lsp-server'
+]
+
 export function findGambitLspServer(context: vscode.ExtensionContext) {
     return findLspServer(context, lspGambitServerDirName, lspGambitServerExecutableName);
+}
+
+export function getGambitLspServerVersion(context: vscode.ExtensionContext)
+{
+    const lspServerCommand = findGambitLspServer(context);
+    if (lspServerCommand === null) {
+        return null
+    }
+
+    const versionOutput = execFileSync(
+        lspServerCommand,
+        ['--version']
+    )
+    return extractVersion(versionOutput.toString())
 }
 
 export function isGambitLspServerInstalled(context: vscode.ExtensionContext) {
@@ -45,8 +67,17 @@ function probeAndInstall(libName: string) {
                     return
                 }
             })
+    } else {
+        execFile('gsi', ['-update', libName],
+            (error, stdout, stderr) => {
+                if (error) {
+                    vscode.window.showInformationMessage(`error updating ${libName}: ${error}`);
+                    return
+                }
+            })
     }
 }
+
 
 export function ensureGambitLspServer(
     context: vscode.ExtensionContext,
@@ -57,15 +88,7 @@ export function ensureGambitLspServer(
     const installLspServerFunc = () => {
         vscode.window.showInformationMessage(`Installing LSP server for Gambit.`)
 
-        let libs = [
-            'codeberg.org/rgherdt/srfi',
-            'github.com/ashinn/irregex',
-            'github.com/rgherdt/chibi-scheme',
-            'codeberg.org/rgherdt/scheme-json-rpc/json-rpc',
-            'codeberg.org/rgherdt/scheme-lsp-server/lsp-server'
-        ]
-
-        libs.forEach((libName: string) => {
+        dependencies.forEach((libName: string) => {
             probeAndInstall(libName)
         })
 
@@ -76,6 +99,10 @@ export function ensureGambitLspServer(
 
     if (!isInstalled) {
         promptForMissingTool("Lsp Server for Gambit not found.", installLspServerFunc);
+    } else if (!installedVersionSufficient(getGambitLspServerVersion(context)!,  
+                                           vscode.workspace.getConfiguration()
+                                              .get('schemeLsp.gambitLspServerMinVersion')!)) {
+        promptForMissingTool("Lsp Server for Gambit outdated.", installLspServerFunc);
     } else {
         callback()
     }

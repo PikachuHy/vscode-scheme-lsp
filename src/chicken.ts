@@ -96,7 +96,7 @@ export async function installChickenLspServer(
     context: vscode.ExtensionContext,
     callback: () => void)
 {
-    vscode.window.showInformationMessage('Installing LSP server for CHICKEN.')
+    vscode.window.showInformationMessage('Installing LSP server for CHICKEN. This can take some minutes.')
     const targetDir = path.join(context.extensionPath, lspChickenServerDirName);
 
     if (fs.existsSync(targetDir)) {
