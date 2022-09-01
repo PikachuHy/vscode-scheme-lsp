@@ -97,7 +97,7 @@ export function ensureGambitLspServer(
         vscode.commands.executeCommand('scheme-lsp-client.reload-extension')
     }
 
-    if (!isInstalled) {
+    if (!isInstalled || force) {
         promptForMissingTool("Lsp Server for Gambit not found.", installLspServerFunc);
     } else if (!installedVersionSufficient(getGambitLspServerVersion(context)!,  
                                            vscode.workspace.getConfiguration()
