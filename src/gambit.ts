@@ -19,6 +19,7 @@
 import * as vscode from 'vscode';
 import { exec, execFile, execFileSync, spawnSync } from 'child_process';
 import { downloadJsonRpcTarball, downloadLspServerTarball, extractVersion, findLspServer, installedVersionSufficient, promptForMissingTool } from './util';
+import * as path from 'path';
 
 const lspGambitServerExecutableName = 'gambit-lsp-server'
 const lspGambitServerDirName = 'tools'
@@ -91,6 +92,32 @@ export function ensureGambitLspServer(
         dependencies.forEach((libName: string) => {
             probeAndInstall(libName)
         })
+
+        const lspParts = ["gambit/util",
+            "private",
+            "trie",
+            "parse",
+            "adapter",
+            "document",
+            "gambit",
+            "lsp-server"]
+        lspParts.forEach(lib => {
+            execFile('gsc', [`codeberg.org/rgherdt/scheme-lsp-server/${lib}`],
+                (error, stdout, stderr) => {
+                    if (error) {
+                        vscode.window.showInformationMessage(`error compiling ${lib}: ${error}`);
+                        return
+                    }
+                })
+        });
+        const scriptPath = path.join(context.extensionPath, 'tools', 'gambit-lsp-server')
+        execFile('gsc', ['-exe', '-nopreload', scriptPath],
+            (error, stdout, stderr) => {
+                if (error) {
+                    vscode.window.showInformationMessage(`error compiling ${scriptPath}: ${error}`);
+                    return
+                }
+            })
 
         vscode.window.showInformationMessage(`LSP server for Gambit successfully installed. Restarting extension.`)
 
