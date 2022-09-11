@@ -43,6 +43,7 @@ export function getGambitLspServerVersion(context: vscode.ExtensionContext)
         return null
     }
 
+
     const versionOutput = execFileSync(
         lspServerCommand,
         ['--version']
@@ -104,54 +105,20 @@ export function ensureGambitLspServer(
     callback: () => void = () => { }
 ) {
     const isInstalled = isGambitLspServerInstalled(context)
-    const compileLspExecutableFunc = () => {
-        const scriptPath = path.join(context.extensionPath, 'tools', 'gambit-lsp-server')
-        vscode.window.showInformationMessage('Compiling gambit-lsp-server executable.')
-        execFile('gsc', ['-exe', '-nopreload', scriptPath],
-            (error, stdout, stderr) => {
-                if (error) {
-                    vscode.window.showInformationMessage(`error compiling ${scriptPath}: ${error}`);
-                    return
-                }
-                vscode.window.showInformationMessage(`LSP server for Gambit successfully installed. Restarting extension.`)
+    const installScriptPath = 
+        path.join(context.extensionPath, lspGambitServerDirName, 'install-gambit-lsp-server.sh')
 
-                vscode.commands.executeCommand('scheme-lsp-client.reload-extension')
-                callback()
-            })
-    }
-    const compileLspLibraryFunc = () => {
-            const lspParts = [
-            "gambit/util",
-            "private",
-            "trie",
-            "parse",
-            "adapter",
-            "document",
-            "gambit",
-            "lsp-server"
-        ].map((lib) => "codeberg.org/rgherdt/scheme-lsp-server/" + lib)
-        if (checkGambitCompileVersion()) {
-            execFile('gsc', lspParts,
-                (error, stdout, stderr) => {
-                    if (error) {
-                        vscode.window.showInformationMessage(`error compiling library: ${error}`);
-                        return
-                    }
-                })
-                compileLspExecutableFunc()
-
-        } else {
-            vscode.window.showInformationMessage(
-                'Non-supported version of GSC found. '
-                + `For better performance, we recommend GSC version ${lspGambitMinimumGscVersion} or later. `
-                + 'Skipping compilation of LSP library due to limitations of installed GSC.')
-            compileLspExecutableFunc()
-        }
-    }
     const installLspServerFunc = () => {
         vscode.window.showInformationMessage(`Installing LSP server for Gambit.`)
 
-        installGambitLibraries(compileLspLibraryFunc)
+        execFile(installScriptPath,
+            (error, stdout, stderr) => {
+                if (error) {
+                    vscode.window.showInformationMessage(`error installing LSP server: ${error}`);
+                    return
+                }
+                callback()
+            })
     }
 
     if (!isInstalled || force) {
