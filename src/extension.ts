@@ -91,7 +91,6 @@ function startLspServer(context: vscode.ExtensionContext) {
         default:
             vscode.window.showInformationMessage('implementation not supported: ' + schemeImplementation);
     }
-    vscode.window.showInformationMessage(`Starting ${languageServerCommand}`)
 
     const debugLevel: string = 
         vscode.workspace.getConfiguration().get('schemeLsp.debugLevel') || "error";
@@ -136,7 +135,9 @@ function startLspServer(context: vscode.ExtensionContext) {
 
     // enable tracing (.Off, .Messages, Verbose)
     client.trace = Trace.Verbose;
-    let disposable = client.start();    
+
+    vscode.window.showInformationMessage(`${languageServerCommand} started.`)
+    let disposable = client.start();
     context.subscriptions.push(disposable);
 }
 
