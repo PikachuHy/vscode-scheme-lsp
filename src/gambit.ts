@@ -111,7 +111,9 @@ export function ensureGambitLspServer(
     const installLspServerFunc = () => {
         vscode.window.showInformationMessage(`Installing LSP server for Gambit.`)
 
-        execFile(installScriptPath,
+        let args = checkGambitCompileVersion() ? ['compile'] : []
+
+        execFile(installScriptPath, args,
             (error, stdout, stderr) => {
                 if (error) {
                     vscode.window.showInformationMessage(`error installing LSP server: ${error}`);
