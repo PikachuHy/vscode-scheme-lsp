@@ -93,23 +93,23 @@ export function ensureGambitLspServer(
             probeAndInstall(libName)
         })
 
-        const lspParts = ["gambit/util",
+        const lspParts = [
+            "gambit/util",
             "private",
             "trie",
             "parse",
             "adapter",
             "document",
             "gambit",
-            "lsp-server"]
-        lspParts.forEach(lib => {
-            execFile('gsc', [`codeberg.org/rgherdt/scheme-lsp-server/${lib}`],
-                (error, stdout, stderr) => {
-                    if (error) {
-                        vscode.window.showInformationMessage(`error compiling ${lib}: ${error}`);
-                        return
-                    }
-                })
-        });
+            "lsp-server"
+        ].map((lib) => "codeberg.org/rgherdt/scheme-lsp-server/" + lib)
+        execFile('gsc', lspParts,
+            (error, stdout, stderr) => {
+                if (error) {
+                    vscode.window.showInformationMessage(`error compiling library: ${error}`);
+                    return
+                }
+            })
         const scriptPath = path.join(context.extensionPath, 'tools', 'gambit-lsp-server')
         execFile('gsc', ['-exe', '-nopreload', scriptPath],
             (error, stdout, stderr) => {
