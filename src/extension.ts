@@ -29,7 +29,7 @@ import {
     ServerOptions,
     StreamInfo
 } from 'vscode-languageclient';
-import { ensureChickenLspServer, chickenEnvironmentMap, findChickenLspServer } from './chicken';
+import { ensureChickenLspServer, findChickenLspServer } from './chicken';
 import { ensureGuileLspServer, guileEnvironmentMap, findGuileLspServer } from './guile';
 import { ensureGambitLspServer, findGambitLspServer } from './gambit';
 
@@ -59,8 +59,8 @@ function setupEnvironment(context: vscode.ExtensionContext, implementation: stri
     let env = {};
     switch (implementation) {
         case 'chicken':
-            env = chickenEnvironmentMap(context)
-            break
+            env = process.env
+            break;
         case 'gambit':
             env = process.env
             break;

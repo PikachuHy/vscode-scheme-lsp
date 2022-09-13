@@ -16,5 +16,5 @@ Scheme of choice. You can do this by setting (`Scheme Lsp: Scheme implementation
 
 To install an LSP server, you can either follow the instructions available
 in `scheme-lsp-server`'s [README](https://codeberg.org/rgherdt/scheme-lsp-server#a-name-user-content-installing-a-installing),
-or let the extension install it automatically. In this case, when opening a
-Scheme file for the first time, you will be prompted for installation.
+or let the extension install it automatically (applies only for Gambit and Guile).
+In this case, when opening a Scheme file for the first time, you will be prompted for installation.

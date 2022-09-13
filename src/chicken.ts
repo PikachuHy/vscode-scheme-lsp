@@ -17,33 +17,11 @@
 
 
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import { execFileSync, execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { extractVersion, findLspServer, installedVersionSufficient, promptForMissingTool } from './util';
 
 const lspChickenServerDirName = 'lsp-chicken-server'
 const lspChickenServerExecutableName = 'chicken-lsp-server'
-
-export function setupChickenEnvironment(context: vscode.ExtensionContext, terminal: vscode.Terminal)
-{
-    const targetDir = path.join(context.extensionPath, lspChickenServerDirName)
-    terminal.sendText(`current_repository_path=$(csi -e '(import (chicken platform)) (for-each (lambda (p) (display p) (display \":\")) (repository-path))') && \
-                       export CHICKEN_REPOSITORY_PATH=${targetDir}:$current_repository_path`)
-}
-
-export function chickenEnvironmentMap(context: vscode.ExtensionContext)
-{
-    const targetDir = path.join(context.extensionPath, lspChickenServerDirName)
-    const currentRepositoryPath = execFileSync(
-        'csi', 
-        ['-e', '(import (chicken platform)) (for-each (lambda (p) (display p) (display ":")) (repository-path))']
-    )
-    return {
-        ...process.env,
-        CHICKEN_REPOSITORY_PATH: `${targetDir}:${currentRepositoryPath}`,
-    }
-}
 
 export function getChickenLspServerVersion(context: vscode.ExtensionContext)
 {
@@ -52,15 +30,10 @@ export function getChickenLspServerVersion(context: vscode.ExtensionContext)
     if (lspServerCommand === null) {
         return null
     }
-    let env = chickenEnvironmentMap(context)
 
     const versionOutput = execFileSync(
         lspServerCommand,
-        ['--version'],
-        {
-            env: env,
-            encoding: 'utf-8'
-        }
+        ['--version']
     )
     console.log(versionOutput.toString())
     return extractVersion(versionOutput.toString())
@@ -76,48 +49,17 @@ export function ensureChickenLspServer(
     force: boolean = false,
     callback: () => void = () => {})
 {
-    const installFunc = () => {
-        installChickenLspServer(context, callback)
-    }
     if (findChickenLspServer(context) == null || force) {
-        promptForMissingTool("Lsp Server for CHICKEN is missing", installFunc);
+        vscode.window.showInformationMessage(
+            "Lsp Server for CHICKEN is missing. Please install it with `chicken-install -s lsp-server` and reopen the window.");
     } else if (! installedVersionSufficient(getChickenLspServerVersion(context)!,
                                             vscode.workspace
                                                .getConfiguration()
                                                .get('schemeLsp.chickenLspServerMinVersion')!
     )) {
-        promptForMissingTool("Lsp Server for CHICKEN is outdated", installFunc);
+        vscode.window.showInformationMessage(
+            "Lsp Server for CHICKEN is outdated. Please update it with `chicken-install -s lsp-server` and reopen the window.");
     } else {
         callback()
     }
 }
-
-export async function installChickenLspServer(
-    context: vscode.ExtensionContext,
-    callback: () => void)
-{
-    vscode.window.showInformationMessage('Installing LSP server for CHICKEN. This can take some minutes.')
-    const targetDir = path.join(context.extensionPath, lspChickenServerDirName);
-
-    if (fs.existsSync(targetDir)) {
-        fs.rmdirSync(targetDir, {recursive: true})
-        console.log(`Successfully deleted ${targetDir}`);
-    }
-
-    let witnessFile = path.join(targetDir, 'bin', lspChickenServerExecutableName)
-
-    fs.mkdirSync(path.dirname(witnessFile), {recursive: true})
-    // create an empty file and monitor it for changes to detect installation end.
-    fs.writeFileSync(witnessFile, "")
-    const terminal = vscode.window.createTerminal(`Chicken LSP install`);
-    setupChickenEnvironment(context, terminal);
-    terminal.sendText(`CHICKEN_INSTALL_REPOSITORY=${targetDir} CHICKEN_INSTALL_PREFIX=${targetDir} chicken-install lsp-server`)
-
-    fs.watch(witnessFile,
-        (eventType, filename) => {
-            if (eventType === 'change') {
-                vscode.window.showInformationMessage('LSP server for CHICKEN installed.')
-                callback()
-            }
-        })
-    }
