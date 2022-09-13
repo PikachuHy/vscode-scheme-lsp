@@ -4,12 +4,12 @@ ARGS=$@
 
 BASE_DIR=$(dirname $0)
 
-force_flag=0
+compile_flag=false
 
 if [ "$#" -eq 1 ]; then
     if test "$1" = "compile"; then
         echo "COMPILE"
-        compile_flag=1
+        compile_flag=true
     fi
 fi
 
@@ -24,7 +24,7 @@ for dep in ${deps[@]}; do
     gsi -install $dep
 done
 
-if [ $compile_flag -eq 1 ]; then
+if [ "$compile_flag" = true ]; then
     gsc codeberg.org/rgherdt/scheme-lsp-server/gambit/util \
         codeberg.org/rgherdt/scheme-lsp-server/private \
         codeberg.org/rgherdt/scheme-lsp-server/trie \
