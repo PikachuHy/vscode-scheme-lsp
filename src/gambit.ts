@@ -51,7 +51,7 @@ export function getGambitLspServerVersion(context: vscode.ExtensionContext)
     return extractVersion(versionOutput.toString())
 }
 
-export function isGambitLspServerInstalled(context: vscode.ExtensionContext) {
+export function isGambitLspLibraryInstalled(context: vscode.ExtensionContext) {
     let res = spawnSync('gsi',
         ['-e', '(import (codeberg.org/rgherdt/scheme-lsp-server gambit util)) (exit)']
     )
@@ -91,11 +91,20 @@ function probeAndInstall(libName: string, callback: () => void) {
     }
 }
 
-function installGambitLibraries(callback: () => void) {
-    dependencies.forEach((libName: string) => {
-        probeAndInstall(libName, () => {})
-    })
-    probeAndInstall('codeberg.org/rgherdt/scheme-lsp-server/lsp-server', callback)
+function compileGambitExecutable(context: vscode.ExtensionContext, callback: () => void) {
+
+    vscode.window.showInformationMessage(`Compiling gambit-lsp-server.`)
+    let source =
+        path.join(context.extensionPath, 'tools', 'gambit-lsp-server.scm')
+
+    execFile('gsc', ['-exe', '-nopreload', source],
+        (error, stdout, stderr) => {
+            if (error) {
+                vscode.window.showInformationMessage(`error compiling gambit-lsp-server: ${error}`);
+                return
+            }
+            callback()
+        })
 }
 
 
@@ -104,7 +113,8 @@ export function ensureGambitLspServer(
     force: boolean = false,
     callback: () => void = () => { }
 ) {
-    const isInstalled = isGambitLspServerInstalled(context)
+    const isLibraryInstalled = isGambitLspLibraryInstalled(context)
+    const isExecutableInstalled = findGambitLspServer(context)
     const installScriptPath = 
         path.join(context.extensionPath, lspGambitServerDirName, 'install-gambit-lsp-server.sh')
 
@@ -123,8 +133,10 @@ export function ensureGambitLspServer(
             })
     }
 
-    if (!isInstalled || force) {
+    if (!isLibraryInstalled || force) {
         promptForMissingTool("Lsp Server for Gambit not found.", installLspServerFunc);
+    } else if (! isExecutableInstalled) {
+        compileGambitExecutable(context, callback);
     } else if (!installedVersionSufficient(getGambitLspServerVersion(context)!,  
                                            vscode.workspace.getConfiguration()
                                               .get('schemeLsp.gambitLspServerMinVersion')!)) {
