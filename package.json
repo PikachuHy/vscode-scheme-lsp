@@ -12,7 +12,7 @@
     "displayName": "Scheme LSP",
     "description": "An LSP-based extension for Scheme",
     "icon": "images/scheme-lsp-logo.png",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "engines": {
 	"vscode": "^1.55.0"
     },
@@ -41,10 +41,6 @@
 	    {
 		"command": "scheme-lsp-client.install-guile-lsp-server",
 		"title": "Scheme LSP: install LSP server for Guile to extension directory"
-	    },
-	    {
-		"command": "scheme-lsp-client.select-implementation",
-		"title": "Scheme LSP: select scheme implementation"
 	    }
 	],
 	"configuration": [
