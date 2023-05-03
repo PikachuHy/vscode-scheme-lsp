@@ -1,37 +1,36 @@
-#!/usr/bin/bash
+#!/bin/sh
 
-ARGS=$@
+set -e
 
-BASE_DIR=$(dirname $0)
+BASE_DIR=$(readlink -f $(dirname $0))
+CUR_DIR=`pwd`
 
-force_flag=0
-compile_flag=0
+gsi -uninstall "codeberg.org/rgherdt/srfi"
+gsi -uninstall "github.com/ashinn/irregex"
+gsi -uninstall "github.com/rgherdt/chibi-scheme"
+gsi -uninstall "codeberg.org/rgherdt/scheme-json-rpc/json-rpc"
+gsi -uninstall "codeberg.org/rgherdt/scheme-lsp-server/lsp-server"
+gsi -install "codeberg.org/rgherdt/srfi"
+gsi -install "github.com/ashinn/irregex"
+gsi -install "github.com/rgherdt/chibi-scheme"
+gsi -install "codeberg.org/rgherdt/scheme-json-rpc/json-rpc"
+gsi -install "codeberg.org/rgherdt/scheme-lsp-server/lsp-server"
 
-if [ "$#" -eq 1 ]; then
-    if test "$1" = "compile"; then
-        echo "COMPILE"
-        compile_flag=1
-    fi
+gsc codeberg.org/rgherdt/scheme-json-rpc/json-rpc
+
+userlib_path=`gsi -e '(display (path-expand "~~userlib"))'`
+scheme_lsp_dir=${userlib_path}codeberg.org/rgherdt/scheme-lsp-server/@
+compile_script=${scheme_lsp_dir}/gambit/compile.sh
+
+if ! [ -f $compile_script ]; then
+    echo "Library not installed. Aborting."
+    exit 1
 fi
 
-deps=("codeberg.org/rgherdt/srfi" \
-          "github.com/ashinn/irregex" \
-          "github.com/rgherdt/chibi-scheme" \
-          "codeberg.org/rgherdt/scheme-json-rpc/json-rpc" \
-          "codeberg.org/rgherdt/scheme-lsp-server/lsp-server")
+echo "Compiling library."
 
-for dep in ${deps[@]}; do
-    gsi -uninstall $dep > /dev/null 2>&1
-    gsi -install $dep
-done
+cd $scheme_lsp_dir/gambit
+rm -f $BASE_DIR/gambit-lsp-server
 
-if [ $compile_flag -eq 1 ]; then
-    gsc codeberg.org/rgherdt/scheme-lsp-server/lsp-server/private/gambit \
-        codeberg.org/rgherdt/scheme-lsp-server/lsp-server/private/util \
-        codeberg.org/rgherdt/scheme-lsp-server/lsp-server/private/parse \
-        codeberg.org/rgherdt/scheme-lsp-server/lsp-server/private/adapter \
-        codeberg.org/rgherdt/scheme-lsp-server/lsp-server/private/trie \
-        codeberg.org/rgherdt/scheme-lsp-server/lsp-server
-fi
-
-gsc -exe -nopreload ${BASE_DIR}/gambit-lsp-server.scm
+sh ./compile.sh
+cd $CUR_DIR

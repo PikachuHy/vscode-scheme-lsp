@@ -22,6 +22,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as https from 'https';
 import hasbin = require('hasbin');
+import { checkServerIdentity } from 'tls';
 
 
 export async function downloadTarball(
@@ -93,11 +94,13 @@ export function installedVersionSufficient(installedVersion: string, requiredVer
 }
 
 export function findLspServer(
-    context: vscode.ExtensionContext, directoryName: string, executableName: string) {
+    context: vscode.ExtensionContext, directoryName: string, executableName: string, extraDirs: any[]=[]) {
     const localInstallation = 
         path.join(context.extensionPath, directoryName, 'bin', executableName)
     const alternativePath = 
         path.join(context.extensionPath, directoryName, executableName)
+    const extraPaths = extraDirs.map(dir => path.join(dir, executableName))
+
     if (hasbin.sync(executableName)) {
         return executableName;   
     } else if (fs.existsSync(localInstallation)) {
@@ -105,7 +108,8 @@ export function findLspServer(
     } else if (fs.existsSync(alternativePath)) {
         return alternativePath;
     } else {
-        return null
+        const extraExe = extraPaths.find(p => fs.existsSync(p))
+        return extraExe || null
     }
 }
 
