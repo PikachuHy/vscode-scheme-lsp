@@ -16,7 +16,12 @@ gsi -install "github.com/rgherdt/chibi-scheme"
 gsi -install "codeberg.org/rgherdt/scheme-json-rpc/json-rpc"
 gsi -install "codeberg.org/rgherdt/scheme-lsp-server/lsp-server"
 
-gsc codeberg.org/rgherdt/scheme-json-rpc/json-rpc
+echo "Compiling irregex. This may take some minutes."
+gsc github.com/ashinn/irregex
+
+# Current stable Gambit version (4.9.4) can't compile `guard` properly
+# echo "Compiling scheme-json-rpc."
+# gsc codeberg.org/rgherdt/scheme-json-rpc/json-rpc
 
 userlib_path=`gsi -e '(display (path-expand "~~userlib"))'`
 scheme_lsp_dir=${userlib_path}codeberg.org/rgherdt/scheme-lsp-server/@
@@ -27,10 +32,12 @@ if ! [ -f $compile_script ]; then
     exit 1
 fi
 
-echo "Compiling library."
+echo "Compiling LSP server."
 
 cd $scheme_lsp_dir/gambit
 rm -f $BASE_DIR/gambit-lsp-server
 
 sh ./compile.sh
 cd $CUR_DIR
+
+echo "Installation finished successfully."
