@@ -18,25 +18,25 @@
 
 import * as vscode from 'vscode';
 import { execFileSync } from 'child_process';
-import { extractVersion, findLspServer, installedVersionSufficient, promptForMissingTool } from './util';
+import { extractVersion, findLspServer, installedVersionSufficient } from './util';
 
-const lspChickenServerDirName = 'lsp-chicken-server'
-const lspChickenServerExecutableName = 'chicken-lsp-server'
+const lspChickenServerDirName = 'lsp-chicken-server';
+const lspChickenServerExecutableName = 'chicken-lsp-server';
 
 export function getChickenLspServerVersion(context: vscode.ExtensionContext)
 {
     const lspServerCommand = findChickenLspServer(context);
-    console.log(`chicken lsp server command: ${lspServerCommand}`)
+    console.log(`chicken lsp server command: ${lspServerCommand}`);
     if (lspServerCommand === null) {
-        return null
+        return null;
     }
 
     const versionOutput = execFileSync(
         lspServerCommand,
         ['--version']
-    )
-    console.log(versionOutput.toString())
-    return extractVersion(versionOutput.toString())
+    );
+    console.log(versionOutput.toString());
+    return extractVersion(versionOutput.toString());
 }
 
 export function findChickenLspServer(context: vscode.ExtensionContext)
@@ -49,7 +49,7 @@ export function ensureChickenLspServer(
     force: boolean = false,
     callback: () => void = () => {})
 {
-    if (findChickenLspServer(context) == null || force) {
+    if (findChickenLspServer(context) === null || force) {
         vscode.window.showInformationMessage(
             "Lsp Server for CHICKEN is missing. Please install it with `chicken-install -s lsp-server` and reopen the window.");
     } else if (! installedVersionSufficient(getChickenLspServerVersion(context)!,
@@ -60,6 +60,6 @@ export function ensureChickenLspServer(
         vscode.window.showInformationMessage(
             "Lsp Server for CHICKEN is outdated. Please update it with `chicken-install -s lsp-server` and reopen the window.");
     } else {
-        callback()
+        callback();
     }
 }

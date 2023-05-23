@@ -30,9 +30,9 @@ export async function downloadTarball(
     libraryName: string, 
     callback: (installerPath: string) => void)
 {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installers'))
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installers'));
     const installerPath= path.join(tmpDir, `${libraryName}.tar.gz`);
-    console.log(`downloading ${tarballUrl}`)
+    console.log(`downloading ${tarballUrl}`);
 
     https.get(tarballUrl, (res) => {
         const filePath = fs.createWriteStream(installerPath);
@@ -40,11 +40,11 @@ export async function downloadTarball(
         filePath.on('finish',() => {
             filePath.close();
             console.log(`Download of ${libraryName} Completed`);
-            callback(installerPath)
-        })
+            callback(installerPath);
+        });
     }).on('error', function(err) {
-        vscode.window.showErrorMessage(`Error downloading ${libraryName}: ${err.message}`)
-    })
+        vscode.window.showErrorMessage(`Error downloading ${libraryName}: ${err.message}`);
+    });
     return installerPath;
 }
 
@@ -54,12 +54,12 @@ export async function downloadJsonRpcTarball(
     callback: (installerPath: string) => void)
 {
     const tarballDirectoryUrl: string = 
-        vscode.workspace.getConfiguration().get('schemeLsp.jsonRpcTarballDirectoryUrl') !
+        vscode.workspace.getConfiguration().get('schemeLsp.jsonRpcTarballDirectoryUrl') !;
 
     const tarballUrl: string =
-        new URL('master.tar.gz', tarballDirectoryUrl).toString()
+        new URL('master.tar.gz', tarballDirectoryUrl).toString();
 
-    return downloadTarball(tarballUrl, "scheme-json-rpc", callback)
+    return downloadTarball(tarballUrl, "scheme-json-rpc", callback);
 }
 
 export async function downloadLspServerTarball(
@@ -68,24 +68,24 @@ export async function downloadLspServerTarball(
     callback: (installerPath: string) => void)
 {
     const tarballDirectoryUrl: string = 
-        vscode.workspace.getConfiguration().get('schemeLsp.lspServerTarballDirectoryUrl')!
+        vscode.workspace.getConfiguration().get('schemeLsp.lspServerTarballDirectoryUrl')!;
 
     const tarballUrl: string =
-        new URL('master.tar.gz', tarballDirectoryUrl).toString()
+        new URL('master.tar.gz', tarballDirectoryUrl).toString();
 
-    return await downloadTarball(tarballUrl, "scheme-lsp-server", callback)
+    return await downloadTarball(tarballUrl, "scheme-lsp-server", callback);
 }
 
 export function extractVersion(versionOutput: string) {
     const lines = versionOutput.split(os.EOL);
-    const regexp = new RegExp('^Version (.*)')
+    const regexp = new RegExp('^Version (.*)');
     for (let line of lines) {
-        let m = line.match(regexp)
+        let m = line.match(regexp);
         if (m !== null) {
-            return m[1]
+            return m[1];
         }
     }
-    return null
+    return null;
 }
 
 export function installedVersionSufficient(installedVersion: string, requiredVersion: string) {
@@ -96,10 +96,10 @@ export function installedVersionSufficient(installedVersion: string, requiredVer
 export function findLspServer(
     context: vscode.ExtensionContext, directoryName: string, executableName: string, extraDirs: any[]=[]) {
     const localInstallation = 
-        path.join(context.extensionPath, directoryName, 'bin', executableName)
+        path.join(context.extensionPath, directoryName, 'bin', executableName);
     const alternativePath = 
-        path.join(context.extensionPath, directoryName, executableName)
-    const extraPaths = extraDirs.map(dir => path.join(dir, executableName))
+        path.join(context.extensionPath, directoryName, executableName);
+    const extraPaths = extraDirs.map(dir => path.join(dir, executableName));
 
     if (hasbin.sync(executableName)) {
         return executableName;   
@@ -108,8 +108,8 @@ export function findLspServer(
     } else if (fs.existsSync(alternativePath)) {
         return alternativePath;
     } else {
-        const extraExe = extraPaths.find(p => fs.existsSync(p))
-        return extraExe || null
+        const extraExe = extraPaths.find(p => fs.existsSync(p));
+        return extraExe || null;
     }
 }
 
